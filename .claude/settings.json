@@ -1,0 +1,151 @@
+{
+  "model": "claude-opus-4-6",
+  "effortLevel": "xhigh",
+  "autoMemoryEnabled": false,
+  "skipAutoPermissionPrompt": true,
+  "env": {
+    "DISABLE_AUTOUPDATER": "1",
+    "ENABLE_TOOL_SEARCH": "true",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "40"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "trustedDirectories": [
+    "~/llm_agent_config/vault"
+  ],
+  "permissions": {
+    "additionalDirectories": [
+      "~/llm_agent_config/vault"
+    ],
+    "allow": [
+      "Read(~/llm_agent_config/vault/**)",
+      "Write(~/llm_agent_config/vault/**)",
+      "Read(~/.claude)",
+      "Read(//tmp/**)"
+    ],
+    "defaultMode": "auto"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/session-start.sh",
+            "timeout": 10,
+            "statusMessage": "Loading vault context..."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/pre-compact.sh",
+            "timeout": 10,
+            "statusMessage": "Checking vault state before compression..."
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/session-stop.sh",
+            "timeout": 5,
+            "statusMessage": "Session end check..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-destructive.sh",
+            "statusMessage": "Checking for destructive commands..."
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/protect-main.sh",
+            "statusMessage": "Checking branch protection..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/validate-vault-write.sh",
+            "timeout": 5,
+            "statusMessage": "Validating vault write..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/detect-stale-notes.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for stale vault notes..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/update-timeline.sh",
+            "timeout": 5,
+            "statusMessage": "Updating timeline..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/validate-vault-write.sh",
+            "timeout": 5,
+            "statusMessage": "Validating vault write..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/detect-stale-notes.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for stale vault notes..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/update-timeline.sh",
+            "timeout": 5,
+            "statusMessage": "Updating timeline..."
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title 'Claude Code' -message 'Claude Code needs your attention' -activate com.microsoft.VSCode"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/context-bar.sh"
+  },
+  "enabledPlugins": {
+    "dx@ykdojo": true
+  }
+}
