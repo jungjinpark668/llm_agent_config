@@ -28,3 +28,5 @@ vault/.obsidian/cache/
 
 # Ignore OS files
 .DS_Store
+
+*.log
