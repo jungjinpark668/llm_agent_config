@@ -50,6 +50,21 @@ if [ -n "$MATCHED_PROJECT" ]; then
     fi
 fi
 
+# --- Check if vault audit is overdue (>7 days) ---
+AUDIT_REMINDER=""
+AUDIT_MARKER="$VAULT/.last-audit"
+if [ -f "$AUDIT_MARKER" ]; then
+    LAST_AUDIT=$(cat "$AUDIT_MARKER")
+    LAST_EPOCH=$(date -j -f "%Y-%m-%d" "$LAST_AUDIT" "+%s" 2>/dev/null || echo 0)
+    NOW_EPOCH=$(date "+%s")
+    DAYS_SINCE=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
+    if [ "$DAYS_SINCE" -ge 7 ]; then
+        AUDIT_REMINDER="VAULT AUDIT OVERDUE: Last audit was $DAYS_SINCE days ago ($LAST_AUDIT). Run /obsidian-audit."
+    fi
+else
+    AUDIT_REMINDER="VAULT AUDIT: No audit on record. Run /obsidian-audit to check vault health."
+fi
+
 # --- Output (~8 lines) ---
 echo "Vault: $VAULT"
 if [ -n "$MATCHED_PROJECT" ]; then
@@ -61,4 +76,5 @@ if [ -n "$CHECKPOINT_LINES" ]; then
     echo "Checkpoints:"
     echo -n "$CHECKPOINT_LINES"
 fi
+[ -n "$AUDIT_REMINDER" ] && echo "$AUDIT_REMINDER"
 echo "Load vault context via subagent or obsidian-notes skill when starting project work."

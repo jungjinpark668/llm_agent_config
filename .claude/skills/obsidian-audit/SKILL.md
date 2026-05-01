@@ -208,3 +208,13 @@ Read `agent/connections.md`:
 - **9-11**: Good shape, minor cleanup needed
 - **6-8**: Significant gaps — fix before creating more notes
 - **Below 6**: Instruction stack has systemic gaps — escalate to rules/skill updates
+
+## After the audit
+
+Stamp the audit date so the session-start hook knows when the last audit happened:
+
+```bash
+date '+%Y-%m-%d' > ~/llm_agent_config/vault/.last-audit
+```
+
+Always run this after completing the audit report, regardless of score.

@@ -417,13 +417,43 @@ This took 20 minutes to figure out.
 
 **How often:** Weekly, or after any large note-creation session.
 
-**What it produces:** A 14-point scorecard printed to the conversation (not saved to a file). Checks sync health, frontmatter, naming, wikilinks, orphans, content quality, folder depth, volume, and rules freshness.
+**What it produces:** A 14-point scorecard printed to the conversation (not saved to a file). Checks sync health, frontmatter, naming, wikilinks, orphans, content quality, folder depth, volume, and rules freshness. After the audit, it stamps `vault/.last-audit` with the current date.
 
 **Example:**
 ```
 You just ran /project-archaeology and it created 4 new notes.
 → Run /obsidian-audit to verify they all pass the quality gate.
 ```
+
+**Weekly reminder (enabled by default):**
+
+The `session-start.sh` hook checks `vault/.last-audit` on every session start. If the last audit was more than 7 days ago (or no audit has ever been run), it prints a reminder:
+
+```
+VAULT AUDIT OVERDUE: Last audit was 12 days ago (2026-04-18). Run /obsidian-audit.
+```
+
+This is not automatic execution — it's a nudge. You still decide whether to run it.
+
+**How it works:**
+
+```
+/obsidian-audit runs
+  → prints 14-point scorecard
+  → stamps: vault/.last-audit = "2026-04-30"
+
+Next session start (any project)
+  → session-start.sh reads vault/.last-audit
+  → compares to today
+  → if >= 7 days: prints "VAULT AUDIT OVERDUE"
+  → if < 7 days: silent
+```
+
+**Why not fully automatic?** A remote scheduled agent (via `/schedule`) can't access your local vault — it runs in Anthropic's cloud without your local files, cron, or symlinks. The session-start reminder is the practical alternative: it runs locally where the vault lives, and nudges you at the right time.
+
+**Setup (already done by default):** The reminder is built into `hooks/session-start.sh`. No extra setup needed. If you want to change the interval from 7 days, edit the line `if [ "$DAYS_SINCE" -ge 7 ]` in the hook.
+
+**To disable:** Remove or comment out the "Check if vault audit is overdue" block in `hooks/session-start.sh`.
 
 #### `/project-archaeology` — deep codebase documentation
 
