@@ -52,10 +52,10 @@ Push your local config to remote servers so they share the same setup:
 
 ```bash
 # Sync to all servers
-./sync-servers.sh
+./hooks/server-sync.sh
 
 # Sync to a specific server only
-./sync-servers.sh <server-alias>
+./hooks/server-sync.sh <server-alias>
 ```
 
 First run copies the repo and runs setup. Later runs sync the latest changes.
@@ -142,7 +142,7 @@ Local Mac ──rsync──▶ server-1
             ──rsync──▶ server-2
 ```
 
-- `sync-servers.sh` rsyncs the repo to each server, then runs `setup.sh` remotely to set up symlinks
+- `hooks/server-sync.sh` rsyncs the repo to each server, then runs `setup.sh` remotely to set up symlinks
 - First run initializes everything (creates dirs, symlinks). Later runs just sync changes.
 
 ### First time setup
@@ -163,11 +163,11 @@ The script checks on each server:
 ### Ongoing sync
 
 ```bash
-./sync-servers.sh              # all servers
-./sync-servers.sh <alias>      # specific server only
+./hooks/server-sync.sh              # all servers
+./hooks/server-sync.sh <alias>      # specific server only
 ```
 
-Server list is defined at the top of `sync-servers.sh` — edit to add/remove servers.
+Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remove servers.
 
 ---
 
@@ -182,4 +182,4 @@ Server list is defined at the top of `sync-servers.sh` — edit to add/remove se
 | `detect-stale-notes.sh` | Write/Edit | Warn when config changes but docs don't |
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
-| `sync-servers.sh` | Manual | Sync config to lab servers |
+| `server-sync.sh` | Manual | Sync config to lab servers |
