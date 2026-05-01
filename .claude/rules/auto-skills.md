@@ -5,22 +5,21 @@ the trigger, condensed rules, and a pointer to the full reference.
 
 ---
 
-## 1. Plans: use create-plan template
+## 1. Plans: invoke create-plan skill
 
-**When:** Producing a plan — in plan mode, responding to "make a plan", or any
-structured plan with action items.
+**When:** Plan mode is active, or user asks to "make a plan" / "plan this".
 
-**Rules:**
-- Template: 1-3 sentence summary → Scope (In/Out) → Action Items (6-10
-  checkbox items) → Open Questions (max 3)
-- Action items: verb-first, atomic, ordered discovery → changes → tests → rollout
-- Point to files/modules; name concrete validation commands
-- Include at least one test/validation item and one edge-case/risk item
-- No code snippets in plans — keep implementation-agnostic
-- No meta-explanation before the plan — output only the plan
-- Operate read-only during planning
+**Action:** Call the `create-plan` skill via the Skill tool at the start of
+planning. This loads the full template and workflow. Do this BEFORE exploring
+the codebase or writing any plan content.
 
-**Full reference:** `.claude/skills/create-plan/SKILL.md`
+```
+Skill({ skill: "create-plan" })
+```
+
+The skill defines the output template (Scope, Action Items, Open Questions)
+and the minimal workflow (scan context → ask if blocking → output plan only).
+Follow it as the primary planning workflow.
 
 ---
 

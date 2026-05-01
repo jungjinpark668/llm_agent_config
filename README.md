@@ -104,6 +104,234 @@ Cron auto-commits and pushes every 5 minutes, so your vault is always backed up.
 
 ---
 
+## Example workflow — session lifecycle
+
+```
+SESSION START ──→ WORK ──→ CHECKPOINT ──→ (compaction) ──→ RECOVERY ──→ SESSION END
+     │                         │               │               │              │
+  reads vault              writes vault    saves snapshot   reads vault    writes vault
+```
+
+Every step reads from or writes to specific files. Here's the full trace.
+
+### 1. Session start
+
+When you open Claude Code in a project directory (e.g. `~/PSy_lab/psylab_comm/`):
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  hooks/session-start.sh fires automatically                 │
+│                                                             │
+│  1. Takes your CWD: /Users/you/PSy_lab/psylab_comm         │
+│  2. Extracts: "psylab_comm"                                 │
+│  3. Converts: "psylab_comm" → "psylab-comm" (sed s/_/-/g)  │
+│  4. Checks: does vault/projects/psylab-comm/ exist? → YES  │
+│  5. Reads: vault/projects/*/working-context.md              │
+│     (greps for "## Checkpoint" headers)                     │
+│  6. Prints ~8 lines to Claude's context                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Output Claude sees:
+
+```
+Vault: /Users/you/llm_agent_config/vault
+Project documentation detected: vault/projects/psylab-comm
+CWD project: psylab-comm
+Load vault context via subagent or obsidian-notes skill when starting project work.
+```
+
+That's ALL that enters Claude's context — just a few lines. The full vault stays outside. Then Claude spawns a subagent to load deeper context:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Explore subagent (separate context, disposable)             │
+│                                                              │
+│  READS: vault/projects/psylab-comm/working-context.md        │
+│  READS: any notes with "project: psylab-comm" frontmatter   │
+│  RETURNS: 25-line summary to main Claude                     │
+│  THEN: subagent context is discarded                         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+The subagent reads everything, distills it, and only the summary enters main context — keeping the context window clean.
+
+### 2. Checkpoint
+
+The most important skill. When you type `/checkpoint`:
+
+```
+┌─ Step 1: Claude writes working-context.md ───────────────────────────────┐
+│                                                                           │
+│  FILE: vault/projects/psylab-comm/working-context.md                      │
+│                                                                           │
+│  APPENDS a new ---CHECKPOINT--- block:                                    │
+│    - Current goal (quotes your words)                                     │
+│    - Plan with [x] done / [ ] remaining                                   │
+│    - Progress (specific file paths, function names)                       │
+│    - Key decisions and WHY                                                │
+│    - Active files being edited                                            │
+│    - Open/blocked items                                                   │
+│                                                                           │
+│  Then TRIMS to keep only the last 5 checkpoints.                          │
+└───────────────────────────────────────────────────────────────────────────┘
+         │
+         ▼ (PostToolUse hook fires automatically)
+┌─ Step 2: update-timeline.sh extracts + appends ──────────────────────────┐
+│                                                                           │
+│  READS:  vault/projects/psylab-comm/working-context.md                    │
+│          (extracts the LAST checkpoint: goal, progress, open items)        │
+│                                                                           │
+│  WRITES: vault/projects/psylab-comm/timeline.md                           │
+│          (appends a 2-line summary — NEVER edits previous entries)         │
+│                                                                           │
+│  This is the PERMANENT record. Even when working-context.md trims         │
+│  old checkpoints, timeline.md keeps every entry forever.                  │
+└───────────────────────────────────────────────────────────────────────────┘
+         │
+         ▼ (another PostToolUse hook fires)
+┌─ Step 3: validate-vault-write.sh checks the file ───────────────────────┐
+│                                                                           │
+│  READS: the file that was just written                                    │
+│  CHECKS: frontmatter? lowercase filename? wikilinks?                      │
+│  OUTPUT: error message if validation fails, silent if passes              │
+└───────────────────────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─ Step 4: Claude writes session tag ──────────────────────────────────────┐
+│                                                                           │
+│  FILE: ~/.claude/.session-topic                                           │
+│  CONTENT: one line, e.g. "llm-agent-config workflow demo"                 │
+│  USED BY: pre-compact.sh (to know which checkpoint to recover)            │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3. Compaction and recovery
+
+When the conversation gets too long (at 40% of context window), Claude auto-compacts:
+
+```
+┌─ pre-compact.sh fires ───────────────────────────────────────────────────┐
+│                                                                           │
+│  READS: git status of all vault-tracked repos                             │
+│  READS: recently modified vault notes                                     │
+│                                                                           │
+│  WRITES: vault/agent/pre-compact-snapshot.md                              │
+│          (keeps last 5 snapshots — git branch, changes, recent commits)   │
+│                                                                           │
+│  PRINTS: checkpoint headers from all working-context.md files             │
+│          (these survive compaction because they're hook output)            │
+└───────────────────────────────────────────────────────────────────────────┘
+         │
+         │  (compaction happens — conversation history is compressed)
+         │  (Claude loses intermediate reasoning, file contents it read)
+         ▼
+┌─ Recovery ────────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Claude sees the checkpoint headers printed by pre-compact.sh             │
+│  Claude spawns Explore subagent to READ:                                  │
+│    - vault/projects/psylab-comm/working-context.md                        │
+│    - vault/agent/pre-compact-snapshot.md                                   │
+│  Subagent returns 25-line summary                                         │
+│  Claude picks up exactly where it left off                                │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4. Session end
+
+When you close the terminal:
+
+```
+┌─ session-stop.sh fires ──────────────────────────────────────────────────┐
+│                                                                           │
+│  READS: vault/agent/session-log.md                                        │
+│  CHECKS: was it updated today?                                            │
+│                                                                           │
+│  If NO → prints reminder:                                                 │
+│    "SESSION LOG REMINDER: consider appending to session-log.md"           │
+│    "PATTERN CHECK: any reusable pattern for instincts.yaml?"              │
+│                                                                           │
+│  DELETES: ~/.claude/.session-topic (cleanup)                              │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+### 5. Sync
+
+Every 5 minutes via cron:
+
+```
+┌─ server-sync.sh ─────────────────────────────────────────────────────────┐
+│                                                                           │
+│  IN: ~/llm_agent_config/ (the whole repo)                                 │
+│                                                                           │
+│  1. git add -A && git commit (auto-commits vault changes)                 │
+│  2. git push origin main (pushes to GitHub)                               │
+│  3. rsync to lab servers                                                  │
+│  4. On each server: checks symlinks, runs setup.sh if needed              │
+│                                                                           │
+│  LOGS TO: hooks/sync.log                                                  │
+│  EXCLUDES: .git/, sync.log, settings.local.json, .obsidian workspace     │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+When you walk from your Mac to a lab server, the vault is already there.
+
+### 6. Project archaeology
+
+A one-time deep analysis of a codebase via `/project-archaeology`. Runs 4 phases:
+
+```
+Phase 1: Surface Scan    → reads README, pyproject.toml, file tree, git log
+Phase 2: Deep Dives      → reads source code, traces data flow, design decisions
+Phase 3: Verification    → pip install, pytest, verifies claims from Phase 2
+Phase 4: Vault Notes     → writes Obsidian notes with evidence tags
+```
+
+During Phases 1-3 it works in a temporary scratch clone (`/tmp/archaeology-<project>-<timestamp>/`). This is deleted when Phase 4 succeeds. The permanent output is vault notes:
+
+```
+vault/projects/psylab-comm/
+├── architecture-overview.md         ← project structure, class hierarchy, build/test
+├── beamforming-subsystem.md         ← domain-specific subsystem docs
+├── signal-chain-and-testing.md      ← TX/RX pipeline, test patterns
+├── working-context.md               ← checkpoint (maintained by /checkpoint)
+└── timeline.md                      ← permanent history (maintained by hook)
+```
+
+In future sessions, the Explore subagent finds these notes via `project:` frontmatter and includes them in the 25-line summary. Claude starts with a pre-built mental model instead of re-discovering the codebase from scratch.
+
+### Complete file map
+
+| File | Written by | Read by |
+|------|-----------|---------|
+| `vault/projects/<proj>/working-context.md` | `/checkpoint` skill | `session-start.sh` (headers), `pre-compact.sh` (headers), Explore subagent (full), `update-timeline.sh` (extract) |
+| `vault/projects/<proj>/timeline.md` | `update-timeline.sh` (auto) | You (in Obsidian or Claude) — reference only, never auto-read |
+| `vault/projects/<proj>/*.md` (archaeology notes) | `/project-archaeology` or `/obsidian-notes` | Explore subagent (when loading project context) |
+| `vault/agent/pre-compact-snapshot.md` | `pre-compact.sh` (auto) | Explore subagent (recovery after compaction) |
+| `vault/agent/session-log.md` | Claude (end of session) | `session-stop.sh` (checks date), Explore subagent |
+| `vault/agent/connections.md` | Claude (`/obsidian-notes`) | Explore subagent |
+| `vault/agent/open-questions.md` | Claude | Explore subagent |
+| `vault/agent/instincts.yaml` | Claude | Claude (pattern reference) |
+| `~/.claude/.session-topic` | `/checkpoint` skill | `pre-compact.sh`, `session-stop.sh` (deletes) |
+| `hooks/sync.log` | `server-sync.sh` (cron) | You (debugging sync) |
+
+### Two write paths, one recovery path
+
+```
+Write path 1 — checkpoint (you control):
+  /checkpoint → working-context.md → (auto) timeline.md
+
+Write path 2 — compaction (automatic):
+  context too long → pre-compact.sh → pre-compact-snapshot.md
+
+Recovery path (always the same):
+  session-start.sh prints headers → subagent reads working-context.md → 25-line summary
+```
+
+Whether you're starting a new session, recovering from compaction, or switching machines — the recovery path is identical. That's the design.
+
+---
+
 ## Automatic Tasks
 
 These run without you doing anything — triggered by hooks in `settings.json`.
