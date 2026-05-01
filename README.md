@@ -332,6 +332,7 @@ Archaeology notes are written once and never automatically updated. There is no 
 | `vault/agent/open-questions.md` | Claude | Explore subagent |
 | `vault/agent/instincts.yaml` | Claude | Claude (pattern reference) |
 | `~/.claude/.session-topic` | `/checkpoint` skill | `pre-compact.sh`, `session-stop.sh` (deletes) |
+| `vault/.last-audit` | `/obsidian-audit` skill, `weekly-vault-audit` remote agent | `session-start.sh` (checks if >= 7 days old) |
 | `hooks/sync.log` | `server-sync.sh` (cron) | You (debugging sync) |
 
 ### Two write paths, one recovery path
@@ -364,6 +365,7 @@ These run without you doing anything — triggered by hooks in `settings.json`.
 | **Claude writes/edits a vault `.md` file** | `detect-stale-notes.sh` | Warns if a config file changed but vault docs weren't updated |
 | **Claude writes `working-context.md`** | `update-timeline.sh` | Appends a checkpoint summary to `timeline.md` — a permanent append-only history |
 | **Every 5 minutes** (cron) | `server-sync.sh` | Auto-commits vault changes and pushes to GitHub |
+| **Every Monday 10am LA** (remote) | `weekly-vault-audit` | Clones repo from GitHub, runs 14-point audit + vault summary, emails report to Gmail under `Claude/Obsidian_audit`, stamps `vault/.last-audit` and pushes |
 | **Claude needs your attention** | `terminal-notifier` | macOS notification popup |
 
 ### When to use each skill
@@ -449,11 +451,57 @@ Next session start (any project)
   → if < 7 days: silent
 ```
 
-**Why not fully automatic?** A remote scheduled agent (via `/schedule`) can't access your local vault — it runs in Anthropic's cloud without your local files, cron, or symlinks. The session-start reminder is the practical alternative: it runs locally where the vault lives, and nudges you at the right time.
+**Two layers of automation:**
 
-**Setup (already done by default):** The reminder is built into `hooks/session-start.sh`. No extra setup needed. If you want to change the interval from 7 days, edit the line `if [ "$DAYS_SINCE" -ge 7 ]` in the hook.
+The audit has both a local reminder and a remote scheduled agent:
 
-**To disable:** Remove or comment out the "Check if vault audit is overdue" block in `hooks/session-start.sh`.
+```
+Layer 1 — Local reminder (session-start.sh):
+  Every session start → checks vault/.last-audit → nudges if >= 7 days
+  Pros: checks everything (cron, symlinks, sync.log)
+  Cons: only fires when you open Claude Code
+
+Layer 2 — Remote scheduled agent (weekly-vault-audit):
+  Every Monday 10am LA time → clones repo from GitHub → runs audit + vault summary → emails report
+  Pros: runs even if you don't open Claude Code that week
+  Cons: can't check local-only things (cron status, symlinks, sync.log)
+```
+
+Together they cover each other's gaps: the remote agent runs reliably on schedule and emails you, while the local reminder catches things the remote agent can't see.
+
+**Remote agent setup (via `/schedule`):**
+
+The remote agent is a Claude Code session running in Anthropic's cloud. It clones the `llm_agent_config` repo from GitHub (kept fresh by the 5-minute cron sync), runs the audit, and emails the results.
+
+To set it up from scratch:
+
+```bash
+# In any Claude Code session, type:
+/schedule
+# Then: "Create a weekly scheduled agent that runs obsidian-audit
+#        every Monday 10am, emails results to <your-email>,
+#        labels under Claude/Obsidian_audit"
+```
+
+Requirements:
+- The `llm_agent_config` repo must be on GitHub (for the remote agent to clone)
+- Gmail MCP connector must be connected at https://claude.ai/settings/connectors
+- Create a Gmail label `Claude/Obsidian_audit` (Settings → Labels → Create new label)
+
+The remote agent sends an email with two parts:
+1. **Audit scorecard** — 14-point health check (PASS/WARN/FAIL per check, action items)
+2. **Weekly vault summary** — reads every project note, summarizes each in 3-5 bullets, lists this week's checkpoints, current goals, open items, session log entries, and inbox status
+
+After the audit, the agent stamps `vault/.last-audit` and pushes, so the local session-start reminder also resets.
+
+Current trigger: `trig_01KfVHTvWpeZfYrh3vVo1xvq`
+Manage at: https://claude.ai/code/scheduled
+
+**Local reminder setup (already done by default):** The reminder is built into `hooks/session-start.sh`. No extra setup needed. If you want to change the interval from 7 days, edit the line `if [ "$DAYS_SINCE" -ge 7 ]` in the hook.
+
+**To disable the local reminder:** Remove or comment out the "Check if vault audit is overdue" block in `hooks/session-start.sh`.
+
+**To disable the remote agent:** Go to https://claude.ai/code/scheduled and disable or delete the `weekly-vault-audit` trigger.
 
 #### `/project-archaeology` — deep codebase documentation
 
