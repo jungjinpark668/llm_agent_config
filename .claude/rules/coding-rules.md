@@ -75,6 +75,9 @@ Then ask: "Current search takes ~500ms. Which aspect matters most?"
 - No "flexibility" or "configurability" that wasn't requested.
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
+- No premature abstractions or helpers for one-time operations.
+- No redundant error handling for internal code paths — only validate at system boundaries.
+- No feature flags or backward-compat shims — just change the code.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
@@ -197,6 +200,7 @@ When editing existing code:
 - Don't refactor things that aren't broken.
 - Match existing style, even if you'd do it differently.
 - If you notice unrelated dead code, mention it — don't delete it.
+- Don't add docstrings, comments, or type annotations to unchanged code.
 
 When your changes create orphans:
 - Remove imports/variables/functions that YOUR changes made unused.
