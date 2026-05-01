@@ -410,6 +410,148 @@ def sort_scores(scores):
 
 ---
 
+## 5. Class Isolation
+
+**Each class does ONLY its own job. Orchestration belongs outside.**
+
+- By default, do NOT instantiate or call another class inside a class.
+- Assume the orchestrating script/test has already prepared all input data — classes receive ready-to-use data via method arguments or constructor.
+- Orchestration (calling classes in sequence, passing outputs between them) belongs in the main script/test, not inside classes.
+- If the code generates a plot, default to PNG output. Ask the user whether to also create SVG, EPS, or EMF files.
+
+**Exception** — calling another class internally requires clear justification covering all three:
+1. **Why** — what problem does it solve that external orchestration cannot?
+2. **How it improves quality** — what readability, correctness, or performance gain?
+3. **Why it's inevitable** — why is passing pre-computed data from the script not viable?
+
+### Example: Hidden Coupling
+
+**User:** "Add a class to generate a report from analyzed data"
+
+**Wrong — `ReportGenerator` instantiates and calls `DataAnalyzer` internally:**
+
+```python
+class ReportGenerator:
+    def __init__(self, raw_data):
+        self.analyzer = DataAnalyzer(raw_data)
+    
+    def generate(self):
+        stats = self.analyzer.compute_stats()
+        trends = self.analyzer.find_trends()
+        
+        return {
+            'summary': self._format_summary(stats),
+            'trends': self._format_trends(trends),
+        }
+    
+    def _format_summary(self, stats):
+        return f"Mean: {stats['mean']:.2f}, Std: {stats['std']:.2f}"
+    
+    def _format_trends(self, trends):
+        return [f"{t['name']}: {t['direction']}" for t in trends]
+```
+
+**Right — orchestration script passes pre-computed data:**
+
+```python
+class ReportGenerator:
+    def __init__(self, stats, trends):
+        self.stats = stats
+        self.trends = trends
+    
+    def generate(self):
+        return {
+            'summary': self._format_summary(),
+            'trends': self._format_trends(),
+        }
+    
+    def _format_summary(self):
+        return f"Mean: {self.stats['mean']:.2f}, Std: {self.stats['std']:.2f}"
+    
+    def _format_trends(self):
+        return [f"{t['name']}: {t['direction']}" for t in self.trends]
+
+# main.py — orchestration lives here
+analyzer = DataAnalyzer(raw_data)
+stats = analyzer.compute_stats()
+trends = analyzer.find_trends()
+
+report = ReportGenerator(stats, trends)
+print(report.generate())
+```
+
+---
+
+## 6. Change Strategy
+
+**Search before writing. Extend before duplicating.**
+
+When modifying existing code:
+- Search for existing methods that already do what you need before writing new ones.
+- Integrate into existing methods via optional parameters rather than duplicating logic.
+- Only create new functions when integration would hurt readability or is technically impossible.
+- When modifying, ensure original behavior still works — the default path must remain unchanged.
+
+### Example: Duplication vs. Extension
+
+**User:** "Add support for weighted averages in the stats module"
+
+**Wrong — creates a new function that duplicates most of `compute_average`:**
+
+```python
+def compute_average(values):
+    return sum(values) / len(values)
+
+def compute_weighted_average(values, weights):
+    total = sum(v * w for v, w in zip(values, weights))
+    return total / sum(weights)
+```
+
+**Right — extend the existing function with an optional parameter:**
+
+```python
+def compute_average(values, weights=None):
+    if weights is not None:
+        return sum(v * w for v, w in zip(values, weights)) / sum(weights)
+    return sum(values) / len(values)
+```
+
+Original callers (`compute_average(values)`) still work identically. New callers pass `weights`.
+
+---
+
+## 7. Naming & Structure
+
+**Follow the project's existing conventions. Don't introduce a second style.**
+
+- If the codebase uses `snake_case`, use `snake_case`. If it uses `camelCase`, use `camelCase`.
+- Match existing patterns for file organization, module layout, and import style.
+- If the project has no existing code (new project), ask the user which style to reference — or suggest a convention and confirm before writing.
+- Never mix naming styles within a project.
+
+---
+
+## 8. Comment Style
+
+**Default Python docstring format is Sphinx (`reST`).**
+
+When a docstring is warranted (public API, non-obvious parameters), use Sphinx style:
+
+```python
+def compute_average(values, weights=None):
+    """Compute arithmetic or weighted average.
+
+    :param values: Sequence of numeric values.
+    :param weights: Optional sequence of weights. If None, computes unweighted average.
+    :returns: The computed average.
+    :raises ValueError: If values is empty.
+    """
+```
+
+Remember: the default is still **no comments**. Only add docstrings when the WHY or interface is non-obvious. Sphinx style applies when you do write one.
+
+---
+
 ## Anti-Patterns Summary
 
 | Principle | Anti-Pattern | Fix |
@@ -418,6 +560,10 @@ def sort_scores(scores):
 | Simplicity First | Strategy pattern for single calculation | One function until complexity is actually needed |
 | Surgical Changes | Reformats quotes, adds type hints while fixing bug | Only change lines that fix the reported issue |
 | Goal-Driven | "I'll review and improve the code" | "Write test for bug X -> make it pass -> verify no regressions" |
+| Class Isolation | Class instantiates another class internally | Orchestration script passes pre-computed data |
+| Change Strategy | New function duplicating existing logic | Extend existing method with optional parameter |
+| Naming & Structure | Introduces camelCase into a snake_case project | Match existing conventions; ask if new project |
+| Comment Style | Google-style or no-format docstrings in Python | Use Sphinx (reST) when docstrings are warranted |
 
 ## Key Insight
 
