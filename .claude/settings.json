@@ -80,11 +80,22 @@
             "statusMessage": "Checking branch protection..."
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/protect-files.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for protected files..."
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
@@ -103,29 +114,12 @@
             "command": "bash ~/llm_agent_config/hooks/update-timeline.sh",
             "timeout": 5,
             "statusMessage": "Updating timeline..."
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/llm_agent_config/hooks/validate-vault-write.sh",
-            "timeout": 5,
-            "statusMessage": "Validating vault write..."
           },
           {
             "type": "command",
-            "command": "bash ~/llm_agent_config/hooks/detect-stale-notes.sh",
-            "timeout": 5,
-            "statusMessage": "Checking for stale vault notes..."
-          },
-          {
-            "type": "command",
-            "command": "bash ~/llm_agent_config/hooks/update-timeline.sh",
-            "timeout": 5,
-            "statusMessage": "Updating timeline..."
+            "command": "bash ~/llm_agent_config/hooks/auto-format-py.sh",
+            "timeout": 10,
+            "statusMessage": "Auto-formatting Python..."
           }
         ]
       }
