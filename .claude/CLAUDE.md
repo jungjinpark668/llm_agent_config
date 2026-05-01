@@ -25,8 +25,13 @@ Vault context is loaded via subagents to keep main context clean. The SessionSta
 
 **When starting project work or after compaction:**
 1. Map the current repository name to its vault-safe equivalent (lowercase, underscores/spaces to hyphens).
-2. Spawn an Explore subagent with: "Read vault context for project `<mapped-name>`. Read `~/llm_agent_config/vault/projects/<mapped-name>/working-context.md` (latest checkpoint), search for `project: <mapped-name>` frontmatter to find related notes. Return a structured summary: current goal, plan status, key decisions, open items, active files. Keep summary under 25 lines."
-3. The subagent returns only the summary — main context never ingests full vault notes.
+2. Check if `~/llm_agent_config/vault/projects/<mapped-name>/code-context.md` exists.
+   - If missing or stale (>30 days with significant repo activity): spawn a code-explore subagent to generate it (see auto-skills rule 5).
+   - If present and fresh: read it directly (it is small, ~25-80 lines).
+3. Spawn an Explore subagent with: "Read vault context for project `<mapped-name>`. Read `~/llm_agent_config/vault/projects/<mapped-name>/working-context.md` (latest checkpoint), search for `project: <mapped-name>` frontmatter to find related notes. Return a structured summary: current goal, plan status, key decisions, open items, active files. Keep summary under 25 lines."
+4. The subagent returns only the summary — main context never ingests full vault notes.
+
+**Briefing subagents:** When spawning any subagent for coding work in a project that has a `code-context.md`, read the file and prepend its contents (without frontmatter) to the subagent prompt under a `## Code context` header. This gives the subagent immediate knowledge of the codebase without re-exploration.
 
 **When making decisions or planning:** Also spawn subagent to check `~/llm_agent_config/vault/agent/open-questions.md`.
 

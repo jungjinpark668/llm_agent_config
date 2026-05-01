@@ -198,7 +198,7 @@ Add caching when performance matters, validation when bad data appears, merging 
 When editing existing code:
 - Don't "improve" adjacent code, comments, or formatting.
 - Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
+- Match existing style, even if you'd do it differently. If a `code-context.md` exists for this project, its Conventions section is the authoritative style reference.
 - If you notice unrelated dead code, mention it — don't delete it.
 - Don't add docstrings, comments, or type annotations to unchanged code.
 

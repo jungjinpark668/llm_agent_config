@@ -63,7 +63,7 @@ See [Server Sync](#server-sync) for details.
 
 ---
 
-## Workflow — How to Use This Well
+## Workflow — how to use this well
 
 ### Starting a session
 
@@ -104,7 +104,7 @@ Cron auto-commits and pushes every 5 minutes, so your vault is always backed up.
 
 ---
 
-## Example workflow — session lifecycle
+## Session lifecycle — file-level trace
 
 ```
 SESSION START ──→ WORK ──→ CHECKPOINT ──→ (compaction) ──→ RECOVERY ──→ SESSION END
@@ -163,7 +163,7 @@ The most important skill. When you type `/checkpoint`:
 ```
 ┌─ Step 1: Claude writes working-context.md ───────────────────────────────┐
 │                                                                           │
-│  FILE: vault/projects/psylab-comm/working-context.md                      │
+│  FILE: vault/projects/<project>/working-context.md                        │
 │                                                                           │
 │  APPENDS a new ---CHECKPOINT--- block:                                    │
 │    - Current goal (quotes your words)                                     │
@@ -179,10 +179,10 @@ The most important skill. When you type `/checkpoint`:
          ▼ (PostToolUse hook fires automatically)
 ┌─ Step 2: update-timeline.sh extracts + appends ──────────────────────────┐
 │                                                                           │
-│  READS:  vault/projects/psylab-comm/working-context.md                    │
+│  READS:  vault/projects/<project>/working-context.md                      │
 │          (extracts the LAST checkpoint: goal, progress, open items)        │
 │                                                                           │
-│  WRITES: vault/projects/psylab-comm/timeline.md                           │
+│  WRITES: vault/projects/<project>/timeline.md                             │
 │          (appends a 2-line summary — NEVER edits previous entries)         │
 │                                                                           │
 │  This is the PERMANENT record. Even when working-context.md trims         │
@@ -201,7 +201,7 @@ The most important skill. When you type `/checkpoint`:
 ┌─ Step 4: Claude writes session tag ──────────────────────────────────────┐
 │                                                                           │
 │  FILE: ~/.claude/.session-topic                                           │
-│  CONTENT: one line, e.g. "llm-agent-config workflow demo"                 │
+│  CONTENT: one line, e.g. "API auth refactor"                              │
 │  USED BY: pre-compact.sh (to know which checkpoint to recover)            │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
@@ -230,8 +230,8 @@ When the conversation gets too long (at 40% of context window), Claude auto-comp
 │                                                                           │
 │  Claude sees the checkpoint headers printed by pre-compact.sh             │
 │  Claude spawns Explore subagent to READ:                                  │
-│    - vault/projects/psylab-comm/working-context.md                        │
-│    - vault/agent/pre-compact-snapshot.md                                   │
+│    - vault/projects/<project>/working-context.md                          │
+│    - vault/agent/pre-compact-snapshot.md                                  │
 │  Subagent returns 25-line summary                                         │
 │  Claude picks up exactly where it left off                                │
 └───────────────────────────────────────────────────────────────────────────┘
@@ -287,26 +287,45 @@ Phase 3: Verification    → pip install, pytest, verifies claims from Phase 2
 Phase 4: Vault Notes     → writes Obsidian notes with evidence tags
 ```
 
-During Phases 1-3 it works in a temporary scratch clone (`/tmp/archaeology-<project>-<timestamp>/`). This is deleted when Phase 4 succeeds. The permanent output is vault notes:
+During Phases 1-3 it works in a temporary scratch clone (`/tmp/archaeology-<project>-<timestamp>/`). This is deleted when Phase 4 succeeds. The permanent output is vault notes with `project:` frontmatter that future subagents find via grep:
 
 ```
-vault/projects/psylab-comm/
+vault/projects/<project>/
 ├── architecture-overview.md         ← project structure, class hierarchy, build/test
-├── beamforming-subsystem.md         ← domain-specific subsystem docs
+├── <theme>-subsystem.md             ← domain-specific deep dives
 ├── signal-chain-and-testing.md      ← TX/RX pipeline, test patterns
 ├── working-context.md               ← checkpoint (maintained by /checkpoint)
 └── timeline.md                      ← permanent history (maintained by hook)
 ```
 
-In future sessions, the Explore subagent finds these notes via `project:` frontmatter and includes them in the 25-line summary. Claude starts with a pre-built mental model instead of re-discovering the codebase from scratch.
+#### Archaeology notes are static
 
-### Complete file map
+Archaeology notes are written once and never automatically updated. There is no hook that watches source code changes.
+
+**When they go stale:**
+- You add new modules or classes to the codebase
+- You refactor the class hierarchy
+- You change major design patterns
+- Test counts or build commands change
+
+**How to update them:**
+1. **Run `/project-archaeology` again** — it will overwrite the existing notes with fresh analysis
+2. **Update manually via `/obsidian-notes`** — tell Claude "update the beamforming-subsystem note, we added a new class"
+3. **The `detect-stale-notes.sh` hook gives a nudge** — but only when you edit config/instruction files (CLAUDE.md, settings.json, hook scripts), not source code
+
+**The gap:** There is no hook that says "you changed `gsc_bf.py`, so `beamforming-subsystem.md` might be stale." Staleness detection only watches config files. Archaeology notes can silently drift from reality.
+
+**Mitigation:** The `working-context.md` checkpoints capture incremental changes session by session. The subagent reads both the (possibly stale) archaeology notes AND the (fresh) checkpoint, getting a blended picture. The archaeology notes provide the stable foundation, checkpoints provide the recent delta.
+
+---
+
+## Complete file map — who writes what, who reads what
 
 | File | Written by | Read by |
 |------|-----------|---------|
 | `vault/projects/<proj>/working-context.md` | `/checkpoint` skill | `session-start.sh` (headers), `pre-compact.sh` (headers), Explore subagent (full), `update-timeline.sh` (extract) |
 | `vault/projects/<proj>/timeline.md` | `update-timeline.sh` (auto) | You (in Obsidian or Claude) — reference only, never auto-read |
-| `vault/projects/<proj>/*.md` (archaeology notes) | `/project-archaeology` or `/obsidian-notes` | Explore subagent (when loading project context) |
+| `vault/projects/<proj>/*.md` (archaeology notes) | `/project-archaeology` or `/obsidian-notes` | Explore subagent (found via `project:` frontmatter grep) |
 | `vault/agent/pre-compact-snapshot.md` | `pre-compact.sh` (auto) | Explore subagent (recovery after compaction) |
 | `vault/agent/session-log.md` | Claude (end of session) | `session-stop.sh` (checks date), Explore subagent |
 | `vault/agent/connections.md` | Claude (`/obsidian-notes`) | Explore subagent |
@@ -328,15 +347,15 @@ Recovery path (always the same):
   session-start.sh prints headers → subagent reads working-context.md → 25-line summary
 ```
 
-Whether you're starting a new session, recovering from compaction, or switching machines — the recovery path is identical. That's the design.
+Whether you're starting a new session, recovering from compaction, or switching machines — the recovery path is identical.
 
 ---
 
-## Automatic Tasks
+## Automatic tasks
 
 These run without you doing anything — triggered by hooks in `settings.json`.
 
-| When | What Runs | What It Does |
+| When | What runs | What it does |
 |------|-----------|--------------|
 | **You open Claude Code** | `session-start.sh` | Detects your project from the current directory, shows checkpoint headers so Claude knows where you left off |
 | **You close Claude Code** | `session-stop.sh` | Reminds to log the session if meaningful work was done, checks for reusable patterns |
@@ -347,18 +366,108 @@ These run without you doing anything — triggered by hooks in `settings.json`.
 | **Every 5 minutes** (cron) | `server-sync.sh` | Auto-commits vault changes and pushes to GitHub |
 | **Claude needs your attention** | `terminal-notifier` | macOS notification popup |
 
-### What you trigger manually
+### When to use each skill
 
-| Command | What It Does |
-|---------|--------------|
-| `/checkpoint` | Saves current goal, plan, progress, decisions, and blockers to vault |
-| `/obsidian-notes` | Take notes, recall context, build cross-session connections |
-| `/obsidian-audit` | 14-point vault health check with scorecard |
-| `/project-archaeology` | Deep 4-phase codebase analysis → vault documentation |
+#### `/checkpoint` — save your place
+
+**When:**
+- Before taking a break or closing the terminal
+- When context is getting heavy (long session, many tool calls)
+- Before pivoting to a different task
+- Before running `/compact`
+
+**How often:** Every 30-60 minutes in an active session, or at natural breakpoints.
+
+**What it produces:** Appends to `vault/projects/<project>/working-context.md`. The `update-timeline.sh` hook auto-appends a summary to `timeline.md`.
+
+**Example:**
+```
+You've been debugging GSCBF tracking for 45 minutes.
+You found the root cause and fixed it.
+→ Type /checkpoint before moving on to the next task.
+```
+
+#### `/obsidian-notes` — remember something
+
+**When:**
+- A non-obvious solution was found (capture the reasoning, not just the fix)
+- A meaningful connection between ideas surfaces
+- You explicitly want Claude to remember something across sessions
+- Project context was built that would take >5 minutes to reconstruct
+
+**When NOT to:** Quick Q&A, simple file edits, information already in the codebase or git history.
+
+**What it produces:** A new `.md` file in `vault/projects/` or `vault/areas/` with frontmatter, wikilinks, and evidence tags.
+
+**Example:**
+```
+You discovered that the Sherman-Morrison inverse update in matrix.py
+diverges when the forgetting factor β < 1 due to exponential error growth.
+This took 20 minutes to figure out.
+→ Tell Claude to note this, or type /obsidian-notes.
+```
+
+#### `/obsidian-audit` — check vault health
+
+**When:**
+- After creating 3+ vault notes in a session
+- Weekly if the vault is actively growing
+- When you suspect sync issues
+- After a subagent creates vault content (verify it followed conventions)
+
+**How often:** Weekly, or after any large note-creation session.
+
+**What it produces:** A 14-point scorecard printed to the conversation (not saved to a file). Checks sync health, frontmatter, naming, wikilinks, orphans, content quality, folder depth, volume, and rules freshness.
+
+**Example:**
+```
+You just ran /project-archaeology and it created 4 new notes.
+→ Run /obsidian-audit to verify they all pass the quality gate.
+```
+
+#### `/project-archaeology` — deep codebase documentation
+
+**When:**
+- First time working on a codebase (run once per project)
+- After major refactors that make existing archaeology notes stale
+- When a new team member or a fresh Claude session needs instant context
+
+**How often:** Once per project. Re-run only after major structural changes.
+
+**What it produces:** 3-10 vault notes in `vault/projects/<project>/` covering architecture, subsystems, signal flow, and test patterns. Also creates `agent/session-log.md` entry.
+
+**Example:**
+```
+You cloned a new repo and opened Claude Code in it.
+The session-start hook says "no project documentation detected."
+→ Type /project-archaeology to bootstrap the vault documentation.
+```
+
+#### Decision tree
+
+```
+Starting on a new codebase?
+  → /project-archaeology (once)
+
+Working on a task?
+  → Just work. Hooks handle formatting and validation.
+
+Taking a break or switching tasks?
+  → /checkpoint
+
+Found a non-obvious insight worth preserving?
+  → /obsidian-notes
+
+Created several notes recently?
+  → /obsidian-audit
+
+Archaeology notes feel outdated after a big refactor?
+  → /project-archaeology again, or /obsidian-notes to update specific notes
+```
 
 ---
 
-## Server Sync
+## Server sync
 
 Keeps your local machine and remote lab servers in sync via rsync over SSH.
 No git credentials needed on the servers — everything is pushed from your local machine.
@@ -380,7 +489,7 @@ Local Mac ──rsync──▶ server-1
 ssh user@server.example.edu
 
 # Then sync (handles init automatically)
-./sync-servers.sh
+./hooks/server-sync.sh
 ```
 
 The script checks on each server:
@@ -410,4 +519,3 @@ Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remo
 | `detect-stale-notes.sh` | Write/Edit | Warn when config changes but docs don't |
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
-| `server-sync.sh` | Manual | Sync config to lab servers |

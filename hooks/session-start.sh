@@ -38,12 +38,25 @@ for CTX in "$VAULT"/projects/*/working-context.md; do
     done < <(grep "^## Checkpoint" "$CTX" 2>/dev/null)
 done
 
+# --- Check code-context freshness ---
+CODE_CTX_STATUS=""
+if [ -n "$MATCHED_PROJECT" ]; then
+    CODE_CTX="$VAULT/projects/$MATCHED_PROJECT/code-context.md"
+    if [ -f "$CODE_CTX" ]; then
+        CTX_DATE=$(grep "^date:" "$CODE_CTX" 2>/dev/null | head -1 | sed 's/date: //')
+        CODE_CTX_STATUS="Code context: $CODE_CTX (dated ${CTX_DATE:-unknown})"
+    else
+        CODE_CTX_STATUS="Code context: not found — generate on first coding task"
+    fi
+fi
+
 # --- Output (~8 lines) ---
 echo "Vault: $VAULT"
 if [ -n "$MATCHED_PROJECT" ]; then
     echo "Project documentation detected: $VAULT/projects/$MATCHED_PROJECT"
     echo "CWD project: $MATCHED_PROJECT"
 fi
+[ -n "$CODE_CTX_STATUS" ] && echo "$CODE_CTX_STATUS"
 if [ -n "$CHECKPOINT_LINES" ]; then
     echo "Checkpoints:"
     echo -n "$CHECKPOINT_LINES"

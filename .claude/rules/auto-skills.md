@@ -110,3 +110,52 @@ exceed 1 minute. Common examples:
 
 Do not background short commands even if they touch these tools (e.g.,
 `pip install single-package` is usually fast — use judgment).
+
+---
+
+## 5. Code-explore agent: generate and brief subagents
+
+**When:** Starting project work in a repository that has a vault project folder
+but no `code-context.md`, OR when `code-context.md` has a `date:` frontmatter
+older than 30 days and the repo has >50 commits since then.
+
+**Adaptive generation:**
+- Check if `vault/projects/<project>/` contains archaeology notes
+  (look for `architecture-overview.md` or notes with `project:` frontmatter
+  and `type: concept`)
+- If archaeology exists: conventions-only mode. Read 5+ source files and
+  linter config. Extract only Conventions and Test style. Reference
+  archaeology via wikilinks. Output ~25-35 lines.
+- If no archaeology: full mode. Read README, CLAUDE.md, build config, and
+  5+ source files. Write all sections: What, Stack, Layout, Key modules,
+  Conventions, Test patterns, Build/run. Output ~50-80 lines.
+- Conventions must be specific and observed from actual code, not generic
+  language defaults
+
+**Subagent prompt template:**
+
+> You are the code-explore agent. Scan the repository at `<CWD>` and write
+> `~/llm_agent_config/vault/projects/<project>/code-context.md`.
+> First check if archaeology notes exist in the vault project folder.
+> If yes: conventions-only mode (Conventions + Test style, ~25-35 lines,
+> wikilink to archaeology). If no: full mode (What, Stack, Layout, Key
+> modules, Conventions, Test patterns, Build/run, ~50-80 lines). Read at
+> least 5 representative source files. Check for linter configs. Be specific
+> about observed patterns. Include YAML frontmatter with date, tags
+> including claude_util, type: concept, status: active, project. Add
+> `[[working-context]]` wikilink at end.
+
+**Briefing protocol:**
+- When spawning any subagent for coding work (implementation, review,
+  planning, exploration), read `code-context.md` and prepend its content
+  (without frontmatter) to the subagent prompt under a `## Code context`
+  header
+- This is mandatory for coding subagents, optional for vault-only or
+  non-coding subagents
+
+**Freshness:**
+- Check `date:` frontmatter on first load each session
+- If >30 days old: check `git log --oneline --since="30 days ago" | wc -l`
+- If >50 commits: regenerate via code-explore subagent
+- If archaeology runs on a project with full-mode code-context, regenerate
+  in conventions-only mode
