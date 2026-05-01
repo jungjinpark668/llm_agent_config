@@ -20,7 +20,7 @@ structured plan with action items.
 - No meta-explanation before the plan — output only the plan
 - Operate read-only during planning
 
-**Full reference:** `.claude/create-plan/SKILL.md`
+**Full reference:** `.claude/skills/create-plan/SKILL.md`
 
 ---
 
@@ -61,7 +61,7 @@ language output.
 - Be specific ("adds batch processing" not "enhances the experience")
 - Have opinions when appropriate; acknowledge uncertainty honestly
 
-**Full reference:** `.claude/humanizer/SKILL.md`
+**Full reference:** `.claude/skills/humanizer/SKILL.md`
 
 ---
 
@@ -91,7 +91,7 @@ language output.
 - No ax.grid() by default
 - No panel titles unless multi-panel genuinely needs them
 
-**Full reference:** `.claude/isscc-figure/SKILL.md`
+**Full reference:** `.claude/skills/isscc-figure/SKILL.md`
 
 ---
 
