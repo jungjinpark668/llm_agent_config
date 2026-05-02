@@ -1,6 +1,6 @@
 # Auto-Applied Skills
 
-Four behaviors that apply automatically based on context. Each section lists
+Three behaviors that apply automatically based on context. Each section lists
 the trigger, condensed rules, and a pointer to the full reference.
 
 ---
@@ -64,37 +64,7 @@ language output.
 
 ---
 
-## 3. Matplotlib figures: apply ISSCC/IEEE style
-
-**When:** Writing or editing Python code that uses matplotlib for plotting.
-
-**Mandatory checklist:**
-- Spines: top/right width 0, left/bottom width 2.0
-- Ticks: labelsize=22, fontweight="bold", width=2
-- Background: transparent (ax.patch + fig.patch facecolor="none")
-- Font: Arial Narrow with sans-serif bold fallback
-- mathtext.default = "regular"; do NOT override mathtext.fontset
-- Colors: CLR_NAVY="#1a1f7a", CLR_RED="#C0392B", CLR_GREEN="#27AE60",
-  CLR_PURPLE="#8E44AD"
-- Axis labels: fontsize=24, weight="bold"
-- Legend: size=18, weight="bold", framealpha=0.7
-- Lines: linewidth=3 data, 2-2.5 reference/dashed
-- Markers: markersize=10, markerfacecolor="white", markeredgewidth=2.5
-- Save: PNG + SVG + EPS, all transparent=True, bbox_inches="tight"
-- Call apply_isscc_style(ax) on every axes object
-
-**Anti-patterns:**
-- No plt.show() without --no-show gate
-- No default matplotlib colors
-- No facecolor="white" — use transparent
-- No ax.grid() by default
-- No panel titles unless multi-panel genuinely needs them
-
-**Full reference:** `.claude/skills/isscc-figure/SKILL.md`
-
----
-
-## 4. Long commands: auto-background
+## 3. Long commands: auto-background
 
 **When:** A Bash command is estimated to take longer than 1 minute.
 
@@ -113,7 +83,7 @@ Do not background short commands even if they touch these tools (e.g.,
 
 ---
 
-## 5. Code-explore agent: generate and brief subagents
+## 4. Code-explore agent: generate and brief subagents
 
 **When:** Starting project work in a repository that has a vault project folder
 but no `code-context.md`, OR when `code-context.md` has a `date:` frontmatter

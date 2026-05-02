@@ -120,12 +120,6 @@
             "command": "bash ~/llm_agent_config/hooks/auto-format-py.sh",
             "timeout": 10,
             "statusMessage": "Auto-formatting Python..."
-          },
-          {
-            "type": "command",
-            "command": "bash ~/llm_agent_config/hooks/isscc-figure-check.sh",
-            "timeout": 5,
-            "statusMessage": "Checking ISSCC figure style..."
           }
         ]
       }
