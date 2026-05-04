@@ -25,6 +25,11 @@ REMOTE_DIR="llm_agent_config"
 
 log() { echo "$(date '+%Y-%m-%d %H:%M'): $*" >> "$LOG_FILE"; }
 
+# ── Log rotation (keep last 500 lines) ──
+if [ -f "$LOG_FILE" ] && [ "$(wc -l < "$LOG_FILE")" -gt 1000 ]; then
+    tail -500 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
+fi
+
 # ── Parse arguments ──
 SKIP_SERVERS=0
 TARGETS=()
