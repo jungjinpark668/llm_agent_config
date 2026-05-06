@@ -89,31 +89,18 @@ Do not background short commands even if they touch these tools (e.g.,
 but no `code-context.md`, OR when `code-context.md` has a `date:` frontmatter
 older than 30 days and the repo has >50 commits since then.
 
-**Adaptive generation:**
-- Check if `vault/projects/<project>/` contains archaeology notes
-  (look for `architecture-overview.md` or notes with `project:` frontmatter
-  and `type: concept`)
-- If archaeology exists: conventions-only mode. Read 5+ source files and
-  linter config. Extract only Conventions and Test style. Reference
-  archaeology via wikilinks. Output ~25-35 lines.
-- If no archaeology: full mode. Read README, CLAUDE.md, build config, and
-  5+ source files. Write all sections: What, Stack, Layout, Key modules,
-  Conventions, Test patterns, Build/run. Output ~50-80 lines.
-- Conventions must be specific and observed from actual code, not generic
-  language defaults
+**Agent:** Defined in `.claude/agents/code-explore.md`. Handles adaptive mode
+selection (conventions-only vs full) internally based on whether archaeology
+notes exist.
 
-**Subagent prompt template:**
+**Invocation:**
 
-> You are the code-explore agent. Scan the repository at `<CWD>` and write
-> `~/llm_agent_config/vault/projects/<project>/code-context.md`.
-> First check if archaeology notes exist in the vault project folder.
-> If yes: conventions-only mode (Conventions + Test style, ~25-35 lines,
-> wikilink to archaeology). If no: full mode (What, Stack, Layout, Key
-> modules, Conventions, Test patterns, Build/run, ~50-80 lines). Read at
-> least 5 representative source files. Check for linter configs. Be specific
-> about observed patterns. Include YAML frontmatter with date, tags
-> including claude_util, type: concept, status: active, project. Add
-> `[[working-context]]` wikilink at end.
+```
+Agent({
+  subagent_type: "code-explore",
+  prompt: "REPO_PATH: <CWD>, PROJECT: <mapped-project-name>"
+})
+```
 
 **Briefing protocol:**
 - When spawning any subagent for coding work (implementation, review,
