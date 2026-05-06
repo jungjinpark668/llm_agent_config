@@ -89,17 +89,18 @@ Do not background short commands even if they touch these tools (e.g.,
 but no `code-context.md`, OR when `code-context.md` has a `date:` frontmatter
 older than 30 days and the repo has >50 commits since then.
 
-**Agent:** Defined in `.claude/agents/code-explore.md`. Handles adaptive mode
-selection (conventions-only vs full) internally based on whether archaeology
-notes exist.
+**Agent:** Defined in `.claude/agents/code-explore.md`. Read-only — uses
+filesystem MCP tools for exploration, returns markdown content as output.
+Handles adaptive mode selection (conventions-only vs full) internally.
 
-**Invocation:**
+**Invocation:** The agent returns content; the caller writes the file.
 
 ```
-Agent({
+result = Agent({
   subagent_type: "code-explore",
   prompt: "REPO_PATH: <CWD>, PROJECT: <mapped-project-name>"
 })
+# Write result to vault/projects/<project>/code-context.md
 ```
 
 **Briefing protocol:**
