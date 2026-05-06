@@ -93,14 +93,17 @@ older than 30 days and the repo has >50 commits since then.
 filesystem MCP tools for exploration, returns markdown content as output.
 Handles adaptive mode selection (conventions-only vs full) internally.
 
-**Invocation:** The agent returns content; the caller writes the file.
+**Invocation:** The agent returns content; the caller writes the file and
+fills in `repo_commit`.
 
 ```
 result = Agent({
   subagent_type: "code-explore",
   prompt: "REPO_PATH: <CWD>, PROJECT: <mapped-project-name>"
 })
-# Write result to vault/projects/<project>/code-context.md
+commit = Bash("git -C <CWD> rev-parse HEAD")
+# Replace <CALLER_FILLS> with commit hash in result
+# Write to vault/projects/<project>/code-context.md
 ```
 
 **Briefing protocol:**
@@ -111,9 +114,18 @@ result = Agent({
 - This is mandatory for coding subagents, optional for vault-only or
   non-coding subagents
 
-**Freshness:**
-- Check `date:` frontmatter on first load each session
-- If >30 days old: check `git log --oneline --since="30 days ago" | wc -l`
-- If >50 commits: regenerate via code-explore subagent
-- If archaeology runs on a project with full-mode code-context, regenerate
-  in conventions-only mode
+**Freshness (token-saving):**
+The agent stores `repo_commit: <hash>` in frontmatter. Before spawning,
+check whether re-exploration is actually needed:
+
+1. Read `repo_commit` from existing `code-context.md` frontmatter
+2. Run: `git -C <REPO> diff --name-only <repo_commit>..HEAD -- '*.py' '*.js' '*.ts' '*.tsx' '*.rs' '*.go' '*.java' '*.c' '*.cpp' '*.h'`
+   (adjust extensions to match project stack)
+3. **Skip** re-exploration if no source files changed (only docs, data,
+   configs, or non-code files changed)
+4. **Regenerate** if:
+   - No `code-context.md` exists
+   - No `repo_commit` in frontmatter (legacy format)
+   - Source files changed between stored commit and HEAD
+   - Archaeology runs on a project with full-mode code-context (regenerate
+     in conventions-only mode)

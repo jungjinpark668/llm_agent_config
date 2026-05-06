@@ -71,6 +71,7 @@ tags: [claude_util, <project>]
 type: concept
 status: active
 project: <PROJECT>
+repo_commit: <CALLER_FILLS>
 ---
 
 ## What
@@ -107,3 +108,4 @@ For conventions-only mode, omit What/Stack/Layout/Key modules/Build/run and add 
 - Do not include example code snippets unless they illustrate a non-obvious pattern.
 - Highlight reusable methods/utilities so future agents extend rather than duplicate.
 - You are read-only. Never write, edit, or create files. Return content only.
+- Leave `repo_commit: <CALLER_FILLS>` in frontmatter. The caller runs `git rev-parse HEAD` and injects the actual hash before writing.
