@@ -40,23 +40,33 @@ COMMON=$(git rev-parse --git-common-dir)
 **Main repo:** Use the sync hook as-is. No changes.
 
 **Worktree:** Create a separate server directory to avoid overwriting main's
-files.
+files. Use the sync hook's `REMOTE_DIR_OVERRIDE` env var instead of
+replicating rsync logic.
 
 - Naming: `<original_dir_name>_wt_<branch_name>`
   (e.g., `psylab_comm_wt_feature-alpha`)
-- Create directory on server:
+- Create directory and symlink venv on server:
   ```bash
   ssh <server> "mkdir -p ~/<parent>/<wt_dir_name>"
-  ```
-- Replicate the sync hook's rsync pattern targeting the worktree directory
-  instead of the hardcoded `REMOTE_DIR`.
-- Symlink the venv from the original:
-  ```bash
   ssh <server> "ln -sfn ~/<REMOTE_DIR>/venv ~/<parent>/<wt_dir_name>/venv"
   ```
-- Run `pip install -e .` in the worktree copy after sync.
+- Sync via the hook with override (single source of rsync logic):
+  ```bash
+  REMOTE_DIR_OVERRIDE="<parent>/<wt_dir_name>" ./hooks/server-sync.sh <server>
+  ```
 - All tmux sessions and log paths use the worktree directory, not the
   main one.
+
+**Sync hook merge policy:**
+- The sync hook must accept `REMOTE_DIR_OVERRIDE` env var. The line should
+  read: `REMOTE_DIR="${REMOTE_DIR_OVERRIDE:-psylab/psylab_comm}"`.
+- If the hook is missing this override, add it before first worktree sync.
+  This is a one-line backward-compatible change (default path unchanged,
+  cron unaffected).
+- Worktree branches should NOT modify the hook's default `REMOTE_DIR` or
+  other hardcoded values. Only the env var controls the target directory.
+- On merge, the hook should have no conflicts since worktree branches
+  never change it.
 
 **Cleanup after merge:**
 - When a worktree is resolved/merged locally, ask the user before deleting
