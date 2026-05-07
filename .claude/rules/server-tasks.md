@@ -112,9 +112,10 @@ Verify clean exit:
 **When:** Claude sends any command to a remote server (SSH, tmux launch, sync
 script run or test).
 
-**Rule:** Use the Monitor tool with an `until` SSH loop that polls for task
-completion. The loop exits when the tmux session ends or a completion/error
-marker appears in the log.
+**Rule:** Always use the Monitor tool with an `until` SSH loop. Never use
+standalone `sleep`, `run_in_background` polling, or manual SSH checks to
+wait for remote tasks. The `until` loop exits when the tmux session ends or
+a completion/error marker appears in the log.
 
 ```bash
 until ssh <server> "! tmux has-session -t <session> 2>/dev/null || \
