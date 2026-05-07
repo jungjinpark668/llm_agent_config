@@ -86,10 +86,18 @@ replicating rsync logic.
 **When:** Claude is about to launch a full parallel worker sweep
 (ProcessPoolExecutor, multi-worker run, or equivalent).
 
-**Rule:** Execute a validation/test run first. This can be a single case, a
-small subset, or the project's `test` command (e.g., `sync_server.sh test`).
-Wait for it to complete. Verify clean exit:
+**Rule:** Execute a minimum working example first. The test must finish
+within 3 minutes. It only checks that the code imports, initializes, and
+runs one iteration without crashing. Not a full test suite.
 
+How to build the MWE:
+- Single worker (`--workers 1` or equivalent)
+- Single case / smallest grid point (one parameter combination)
+- Minimal sample count (e.g., 1 time point, 1 pilot, fewest iterations)
+- If the project has a `test` command (e.g., `sync_server.sh test`), use it
+  only if it runs under 3 minutes. Otherwise, construct a shorter invocation.
+
+Verify clean exit:
 - No `Traceback` in output
 - No `Error` (other than expected log lines)
 - Exit code 0
