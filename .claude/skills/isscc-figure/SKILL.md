@@ -168,6 +168,27 @@ ax.text(GB_STABILITY * 0.93, y_text,
 Use `0.93·x_ref` (log) or `x_ref - small_offset` (linear) to nudge the
 label off the line itself.
 
+## Subscript font rule
+
+With `mathtext.default = "regular"`, bare text inside `$...$` inherits the
+body font (Arial Narrow). Wrapping subscripts in `\mathrm{}` reverts them
+to the default mathtext roman font (DejaVu Sans), creating a visible
+mismatch.
+
+```python
+# wrong — "update" renders in DejaVu Sans
+ax.set_ylabel(r"$T_{\mathrm{update}} / T_{\mathrm{MIN}}$")
+
+# correct — subscript inherits Arial Narrow
+ax.set_ylabel(r"$T_{update} / T_{MIN}$")
+```
+
+Only use `\mathrm{}` for actual math-mode roman symbols (e.g., `\mathrm{d}x`
+for differentials). For text subscripts that label a variable, use bare text.
+
+Applies to `set_xlabel`, `set_ylabel`, `ax.text()`, legend labels, and
+annotations.
+
 ## Common Fixes
 
 - **Tick overlap**: `ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=6))` or `rotation=45`
@@ -184,3 +205,4 @@ label off the line itself.
 - Do NOT add `ax.grid(...)` by default
 - Do NOT add panel titles unless a multi-panel layout really needs them
 - Do NOT override `mathtext.fontset` to `stixsans` / `cm` / `stix` — stick with the `dejavusans` default
+- Do NOT use `\mathrm{}` for text subscripts — it renders in DejaVu Sans instead of Arial Narrow
