@@ -1,8 +1,4 @@
 {
-  "model": "claude-opus-4-6[1m]",
-  "effortLevel": "xhigh",
-  "autoMemoryEnabled": false,
-  "skipAutoPermissionPrompt": true,
   "env": {
     "DISABLE_AUTOUPDATER": "1",
     "ENABLE_TOOL_SEARCH": "true",
@@ -13,21 +9,19 @@
     "commit": "",
     "pr": ""
   },
-  "trustedDirectories": [
-    "~/llm_agent_config/vault"
-  ],
   "permissions": {
-    "additionalDirectories": [
-      "~/llm_agent_config/vault"
-    ],
     "allow": [
       "Read(~/llm_agent_config/vault/**)",
       "Write(~/llm_agent_config/vault/**)",
       "Read(~/.claude)",
       "Read(//tmp/**)"
     ],
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "additionalDirectories": [
+      "~/llm_agent_config/vault"
+    ]
   },
+  "model": "claude-opus-4-6[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -142,5 +136,12 @@
   },
   "enabledPlugins": {
     "dx@ykdojo": true
-  }
+  },
+  "effortLevel": "xhigh",
+  "autoMemoryEnabled": false,
+  "skipAutoPermissionPrompt": true,
+  "trustedDirectories": [
+    "~/llm_agent_config/vault"
+  ],
+  "agentPushNotifEnabled": true
 }
