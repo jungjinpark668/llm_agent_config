@@ -1,6 +1,6 @@
 # Auto-Applied Skills
 
-Three behaviors that apply automatically based on context. Each section lists
+Five behaviors that apply automatically based on context. Each section lists
 the trigger, condensed rules, and a pointer to the full reference.
 
 ---
@@ -129,3 +129,26 @@ check whether re-exploration is actually needed:
    - Source files changed between stored commit and HEAD
    - Archaeology runs on a project with full-mode code-context (regenerate
      in conventions-only mode)
+
+---
+
+## 5. Code quality: invoke code-quality skill
+
+**When:** User types `/code-quality` or asks to "review the code",
+"check code quality", "audit the codebase", "review codebase against rules",
+or "run code quality pipeline".
+
+**Action:** Call the `code-quality` skill via the Skill tool. The skill
+handles the full pipeline (explore -> review -> reform -> test).
+
+```
+Skill({ skill: "code-quality", args: "<repo-path> [--review-only] [--dry-run]" })
+```
+
+**Not triggered by:**
+- Single-file review requests (use built-in `python-code-reviewer`)
+- PR review requests (use the `review` skill)
+- Vault audit requests (use `obsidian-audit`)
+- General "how does this code work?" questions (use Explore subagent)
+
+**Full reference:** `.claude/skills/code-quality/SKILL.md`
