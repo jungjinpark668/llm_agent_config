@@ -546,8 +546,6 @@ def compute_average(values, weights=None):
     """
 ```
 
-Remember: the default is still **no comments**. Only add docstrings when the WHY or interface is non-obvious. Sphinx style applies when you do write one.
-
 ---
 
 ## Anti-Patterns Summary
