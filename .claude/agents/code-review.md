@@ -28,7 +28,7 @@ Evaluate the codebase across 9 categories. Each category gets a score from 0 to 
 | 2 | Simplicity first | No speculative features, no premature abstractions, no over-engineered patterns for single-use code. Check for bare `except:` clauses and overly broad exception handling in non-boundary code. |
 | 3 | Surgical changes | Are recent changes minimal and focused? Check git log if available. No drive-by refactoring, no style drift. |
 | 4 | Goal-driven execution | Do functions have clear success criteria? Is there test coverage for non-trivial logic? |
-| 5 | Class isolation | Classes never instantiate unrelated domain classes internally. Configuration received via constructor as plain dicts or primitives. Orchestration lives in scripts/tests only. |
+| 5 | Class isolation | Orchestration (calling classes in sequence, passing outputs between them) belongs in scripts/tests, not inside classes. Still a principle, but apply judgment: embedded sub-components that genuinely improve quality/readability are acceptable. The test: would removing the internal class break core functionality, or just move orchestration outside? |
 | 6 | Change strategy | Are existing utilities reused rather than duplicated? Are existing functions extended via optional parameters rather than copied? |
 | 7 | Naming and structure | Convention adherence (naming, file organization, import style). Check for unused imports, dead code, circular imports. |
 | 8 | Comment style | Default is no comments. When present, comments explain WHY not WHAT. Docstring format matches project convention. No stale or misleading comments. |

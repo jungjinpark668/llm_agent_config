@@ -414,15 +414,13 @@ def sort_scores(scores):
 
 **Each class does ONLY its own job. Orchestration belongs outside.**
 
-- By default, do NOT instantiate or call another class inside a class.
-- Assume the orchestrating script/test has already prepared all input data — classes receive ready-to-use data via method arguments or constructor.
-- Orchestration (calling classes in sequence, passing outputs between them) belongs in the main script/test, not inside classes.
-- If the code generates a plot, default to PNG output. Ask the user whether to also create SVG, EPS, or EMF files.
+The rule targets two things:
+- **Orchestration** — calling classes in sequence and passing outputs between them belongs in the main script/test, not inside classes.
+- **Unnecessary coupling** — a class should not instantiate another domain class when the caller could pass the result instead.
 
-**Exception** — calling another class internally requires clear justification covering all three:
-1. **Why** — what problem does it solve that external orchestration cannot?
-2. **How it improves quality** — what readability, correctness, or performance gain?
-3. **Why it's inevitable** — why is passing pre-computed data from the script not viable?
+This is still a principle to follow, but apply judgment: when embedding a sub-component genuinely improves code quality and readability (e.g., a beamformer that owns internal filters as part of its signal chain), that is acceptable. The test: would removing the internal class break core functionality, or just move orchestration outside? Prefer the option that results in better readability and cleaner API for callers.
+
+- If the code generates a plot, default to PNG output. Ask the user whether to also create SVG, EPS, or EMF files.
 
 ### Example: Hidden Coupling
 
@@ -560,7 +558,7 @@ Remember: the default is still **no comments**. Only add docstrings when the WHY
 | Simplicity First | Strategy pattern for single calculation | One function until complexity is actually needed |
 | Surgical Changes | Reformats quotes, adds type hints while fixing bug | Only change lines that fix the reported issue |
 | Goal-Driven | "I'll review and improve the code" | "Write test for bug X -> make it pass -> verify no regressions" |
-| Class Isolation | Class instantiates another class internally | Orchestration script passes pre-computed data |
+| Class Isolation | Class orchestrates another class (sequence + pass data) | Move orchestration to script; embedded sub-components are OK |
 | Change Strategy | New function duplicating existing logic | Extend existing method with optional parameter |
 | Naming & Structure | Introduces camelCase into a snake_case project | Match existing conventions; ask if new project |
 | Comment Style | Google-style or no-format docstrings in Python | Use Sphinx (reST) when docstrings are warranted |
