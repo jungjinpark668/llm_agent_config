@@ -19,6 +19,60 @@ Run the 4-agent code quality pipeline on a target repository. The pipeline evalu
 - `--skip-explore` — assume code-context.md is fresh, skip the explore stage
 - `--dry-run` — run explore + review + reform, show `git diff`, then revert all changes. Skip test stage.
 
+## Agent spawning protocol
+
+Custom agents (`code-review`, `code-reform`, `code-tester`) are defined in
+`~/.claude/agents/`. They are auto-discovered as `subagent_type` values only
+after a session restart. Within the same session they were created, or if the
+system does not recognize the agent name, use this fallback:
+
+1. Read the agent definition file: `~/.claude/agents/<agent-name>.md`
+2. Strip the YAML frontmatter (the `---` delimited block)
+3. Extract the `tools:` line from frontmatter -- note which tools the agent
+   needs (this is informational; the general-purpose agent has all tools)
+4. Spawn via `general-purpose` with the agent body as the system instructions:
+   ```
+   Agent({
+     subagent_type: "general-purpose",
+     prompt: "<agent body content>\n\n<task-specific parameters>"
+   })
+   ```
+
+`code-explore` is a built-in subagent type and never needs this fallback.
+
+**Concretely, for each agent:**
+
+### code-review (read-only)
+```
+agent_def = Read("~/.claude/agents/code-review.md")  // strip frontmatter
+Agent({
+  subagent_type: "general-purpose",
+  prompt: "<agent_def body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+})
+```
+
+### code-reform (has write access)
+```
+agent_def = Read("~/.claude/agents/code-reform.md")  // strip frontmatter
+Agent({
+  subagent_type: "general-purpose",
+  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
+})
+```
+
+### code-tester (read + Bash)
+```
+agent_def = Read("~/.claude/agents/code-tester.md")  // strip frontmatter
+Agent({
+  subagent_type: "general-purpose",
+  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
+})
+```
+
+This approach keeps the agent logic in `.claude/agents/` as the single source
+of truth. The skill reads the definition at runtime, so updates to agent files
+take effect immediately without changing the skill.
+
 ## Pipeline
 
 ### Stage 1: Setup
@@ -54,16 +108,15 @@ Run the 4-agent code quality pipeline on a target repository. The pipeline evalu
 ### Stage 3: Review
 
 1. Read code-context.md content (strip frontmatter).
-2. Spawn code-review agent:
+2. Read `~/.claude/agents/code-review.md`, strip frontmatter to get the agent body.
+3. Spawn code-review agent using the spawning protocol above:
    ```
    Agent({
-     subagent_type: "code-review",
-     prompt: "REPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+     subagent_type: "general-purpose",
+     prompt: "<code-review agent body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
    })
    ```
-   Note: `subagent_type` must be the agent name from frontmatter. If the system does not support custom agent names as subagent_type, use the general-purpose agent type and include the full agent definition content in the prompt.
-
-3. Write the returned scorecard to `$STAGING/scorecard.md`.
+4. Write the returned scorecard to `$STAGING/scorecard.md`.
 4. Parse the overall score from the summary table.
 
 **Short-circuit:** If overall score >= 9.0/10 (81/90 or higher):
@@ -82,11 +135,12 @@ Run the 4-agent code quality pipeline on a target repository. The pipeline evalu
    ```
    Record that a stash was created so it can be restored later.
 
-2. Spawn code-reform agent:
+2. Read `~/.claude/agents/code-reform.md`, strip frontmatter to get the agent body.
+3. Spawn code-reform agent using the spawning protocol:
    ```
    Agent({
-     subagent_type: "code-reform",
-     prompt: "REPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
+     subagent_type: "general-purpose",
+     prompt: "<code-reform agent body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
    })
    ```
 
