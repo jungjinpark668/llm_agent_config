@@ -164,11 +164,12 @@ take effect immediately without changing the skill.
 
 **Skip if** `--review-only` or `--dry-run` flags are set.
 
-1. Spawn code-tester agent:
+1. Read `~/.claude/agents/code-tester.md`, strip frontmatter to get the agent body.
+2. Spawn code-tester agent using the spawning protocol:
    ```
    Agent({
-     subagent_type: "code-tester",
-     prompt: "REPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
+     subagent_type: "general-purpose",
+     prompt: "<code-tester agent body>\n\nREPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
    })
    ```
 
