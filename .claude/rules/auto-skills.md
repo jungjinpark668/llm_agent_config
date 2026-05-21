@@ -1,6 +1,6 @@
 # Auto-Applied Skills
 
-Five behaviors that apply automatically based on context. Each section lists
+Six behaviors that apply automatically based on context. Each section lists
 the trigger, condensed rules, and a pointer to the full reference.
 
 ---
@@ -152,3 +152,28 @@ Skill({ skill: "code-quality", args: "<repo-path> [--review-only] [--dry-run]" }
 - General "how does this code work?" questions (use Explore subagent)
 
 **Full reference:** `.claude/skills/code-quality/SKILL.md`
+
+---
+
+## 6. UX quality: invoke ux-quality skill
+
+**When:** User types `/ux-quality` or asks to "check UX", "audit user
+experience", "review automation quality", "improve CLI convenience",
+"check app usability", "generate usage README", or "review developer
+experience".
+
+**Action:** Call the `ux-quality` skill via the Skill tool. The skill
+handles the full pipeline (context -> review -> reform -> test -> README).
+
+```
+Skill({ skill: "ux-quality", args: "<repo-path> [--review-only] [--readme-only] [--dry-run]" })
+```
+
+**Not triggered by:**
+- Code quality or style review requests (use `code-quality`)
+- Single-file review requests (use built-in `python-code-reviewer`)
+- PR review requests (use the `review` skill)
+- General "how does this code work?" questions (use Explore subagent)
+- Web UI or visual design questions (out of scope)
+
+**Full reference:** `.claude/skills/ux-quality/SKILL.md`
