@@ -22,7 +22,7 @@ Run the 3-agent UX quality pipeline on a CLI/TUI application. The pipeline evalu
 
 ## Agent spawning protocol
 
-Custom agents (`ux-review`, `ux-reform`, `readme-writer`) are defined in
+Custom agents (`ux-review`, `ux-reform`, `usage-guide-writer`) are defined in
 `~/.claude/agents/`. They are auto-discovered as `subagent_type` values only
 after a session restart. Within the same session they were created, or if the
 system does not recognize the agent name, use this fallback:
@@ -60,9 +60,9 @@ Agent({
 })
 ```
 
-### readme-writer (write access for README.md only)
+### usage-guide-writer (write access for README.md only)
 ```
-agent_def = Read("~/.claude/agents/readme-writer.md")  // strip frontmatter
+agent_def = Read("~/.claude/agents/usage-guide-writer.md")  // strip frontmatter
 Agent({
   subagent_type: "general-purpose",
   prompt: "<agent_def body>\n\nREPO_PATH: <path>\nREADME_MODE: generate\n\n## Code context\n<code-context content>\n\n## UX scorecard\n<scorecard content if available>"
@@ -163,8 +163,8 @@ Agent({
    - If `README.md` exists and `--readme-only`: `update`
    - If `README.md` exists and running full pipeline: `append` (add missing sections only)
 
-2. Read `~/.claude/agents/readme-writer.md`, strip frontmatter to get the agent body.
-3. Spawn readme-writer agent. Include the UX scorecard in the prompt if available (helps the agent understand what the app does).
+2. Read `~/.claude/agents/usage-guide-writer.md`, strip frontmatter to get the agent body.
+3. Spawn usage-guide-writer agent. Include the UX scorecard in the prompt if available (helps the agent understand what the app does).
 4. The agent writes README.md directly to REPO_PATH.
 5. Record that README was generated/updated.
 
@@ -218,7 +218,7 @@ Based on the test report verdict (if test was run):
 - If ux-review fails, abort (no scorecard means reform can't work). README-only mode can still proceed.
 - If ux-reform fails, present the scorecard as the final output. README can still proceed.
 - If code-tester fails, keep reform changes but warn that testing was not completed.
-- If readme-writer fails, report it. Reform changes are independent and unaffected.
+- If usage-guide-writer fails, report it. Reform changes are independent and unaffected.
 
 ## Notes
 
