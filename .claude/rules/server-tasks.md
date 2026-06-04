@@ -59,15 +59,19 @@ replicating rsync logic.
   main one.
 
 **Sync hook merge policy:**
-- The sync hook must accept `REMOTE_DIR_OVERRIDE` env var. The line should
-  read: `REMOTE_DIR="${REMOTE_DIR_OVERRIDE:-psylab/psylab_comm}"`.
-- If the hook is missing this override, add it before first worktree sync.
-  This is a one-line backward-compatible change (default path unchanged,
-  cron unaffected).
-- Worktree branches should NOT modify the hook's default `REMOTE_DIR` or
-  other hardcoded values. Only the env var controls the target directory.
-- On merge, the hook should have no conflicts since worktree branches
-  never change it.
+- The sync hook must expose a remote-target override env var so a worktree can
+  redirect its sync without editing the hook. The exact form depends on the
+  project's hook — for example `REMOTE_DIR="${REMOTE_DIR_OVERRIDE:-<REMOTE_DIR>}"`,
+  where `<REMOTE_DIR>` is that project's normal remote path (e.g.
+  `psylab/psylab_comm` for psylab-comm), or a hook that already accepts
+  `REMOTE_HOST`/`REMOTE_ROOT` (as in the beamforming project's
+  `scripts/remote_vivado_build.sh`). Keep the default equal to the main repo's
+  normal remote path so cron and non-worktree runs are unchanged.
+- If the hook has no such override, add one before the first worktree sync. This
+  is a one-line, backward-compatible change (default path unchanged).
+- Worktree branches should NOT modify the hook's default target or other
+  hardcoded values. Only the env var controls the target directory, so merges
+  stay conflict-free.
 
 **Cleanup after merge:**
 - When a worktree is resolved/merged locally, ask the user before deleting
@@ -82,7 +86,27 @@ replicating rsync logic.
 
 ---
 
-## 3. Validate before full run
+## 3. Server parallelism policy
+
+**When:** Claude is about to choose a worker count for a remote run.
+
+**Rule:** Parallelism depends on the target server. Resolve the target (alias,
+hostname, or IP from the sync hook or `~/.ssh/config`) and apply:
+
+- **`sathe-srv` (`sathe-srv1` / `sathe-srv2.ece.gatech.edu`)** — high-capacity
+  build host. Parallelism ALLOWED: `ProcessPoolExecutor`, `--workers N`,
+  multi-worker sweeps, multiprocessing pools.
+- **RPI (`143.215.153.94`, user `jpark3066`)** — resource-constrained Raspberry
+  Pi. Parallelism is STRICTLY BANNED. Single worker only (`--workers 1`), no
+  `ProcessPoolExecutor`, no multiprocessing pools — always serial.
+
+If the resolved target is the Pi, force serial regardless of any requested worker
+count and tell the user the run was capped to one worker. For any server not
+listed here, default to a single worker until its capacity is confirmed.
+
+---
+
+## 4. Validate before full run
 
 **When:** Claude is about to launch a full parallel worker sweep
 (ProcessPoolExecutor, multi-worker run, or equivalent).
@@ -103,12 +127,13 @@ Verify clean exit:
 - No `Error` (other than expected log lines)
 - Exit code 0
 
-**Pass:** Proceed to the full parallel run.
+**Pass:** Proceed to the full run, with the worker count capped by the rule 3
+parallelism policy (on the Pi, the "full run" is still single-worker).
 **Fail:** Stop. Report the error to the user. Do NOT launch the full run.
 
 ---
 
-## 4. Background monitoring (always on)
+## 5. Background monitoring (always on)
 
 **When:** Claude sends any command to a remote server (SSH, tmux launch, sync
 script run or test).
@@ -128,6 +153,8 @@ done
 **Intervals:**
 - Test/validation runs: 30s
 - Full sweeps: 60-120s (match expected duration)
+- Serial Pi runs (rule 3): a single worker can run long; size the interval to the
+  expected wall-clock rather than assuming parallel speedup.
 
 **After the loop exits:** Read the tail of the remote log via SSH and report
 results to the user. If the task failed, include the traceback.
