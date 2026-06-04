@@ -37,6 +37,15 @@ Vault context is loaded via subagents to keep main context clean. The SessionSta
 
 **When you need specific vault info:** Use subagent, not direct Read/Grep of vault files. Exception: if you need a single specific file and know its exact path, direct read is fine.
 
+### Automatic context loading (per-project manifest)
+
+Each project may have `vault/projects/<project>/context-map.md` with two sections:
+
+- `## always` — notes the SessionStart hook injects in full at the top of every session, so baseline context is always present. Keep the list short and curated (for example, `directory-structure.md`).
+- `## keywords` — `kw1, kw2 -> noteA.md, noteB.md` rules. The UserPromptSubmit hook matches each prompt (case-insensitive, min 4 chars) and surfaces the mapped notes as pointers; load them via an Explore subagent only when the task actually needs them.
+
+Both hooks resolve the current project from the CWD through `hooks/lib/detect-project.sh`, so two concurrent projects never read each other's manifest. To onboard a project: copy `vault/library/templates/directory-structure-template.md` into the project folder as `directory-structure.md`, then list it under `## always` and add keyword rules.
+
 ## Available Skills
 
 | Skill | When to use |

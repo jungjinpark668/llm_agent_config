@@ -22,6 +22,18 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/user-prompt-submit.sh",
+            "timeout": 5,
+            "statusMessage": "Matching project notes..."
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

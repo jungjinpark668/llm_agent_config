@@ -5,6 +5,7 @@ INPUT=$(cat)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VAULT="$(dirname "$SCRIPT_DIR")/vault"
+source "$SCRIPT_DIR/lib/locking.sh"
 
 FILE_PATH=$(echo "$INPUT" | python3 -c "
 import sys, json
@@ -168,16 +169,24 @@ print(line2)
 [ -z "$OUTPUT" ] && OUTPUT="(checkpoint parse failed)\n(empty)"
 
 TS=$(date '+%Y-%m-%d %H:%M')
-
 TODAY=$(date '+%Y-%m-%d')
-if ! grep -q "## $TODAY" "$TIMELINE_FILE"; then
-    echo "" >> "$TIMELINE_FILE"
-    echo "## $TODAY" >> "$TIMELINE_FILE"
-fi
 
-echo "- ${TS}" >> "$TIMELINE_FILE"
-echo "$OUTPUT" | while IFS= read -r line; do
-    echo "  ${line}" >> "$TIMELINE_FILE"
-done
+# Serialize concurrent appends (two sessions editing the same project) and write
+# the whole entry in one shot, so the day header is never duplicated and lines
+# never interleave. Best-effort: append even if the lock could not be acquired.
+LOCKDIR="${TIMELINE_FILE}.lock"
+LOCKED=0
+if acquire_lock "$LOCKDIR" 3; then LOCKED=1; fi
+
+BLOCK=""
+if ! grep -q "^## $TODAY\$" "$TIMELINE_FILE"; then
+    BLOCK+=$'\n'"## $TODAY"$'\n'
+fi
+BLOCK+="- ${TS}"$'\n'
+BLOCK+=$(echo "$OUTPUT" | sed 's/^/  /')
+BLOCK+=$'\n'
+printf '%s' "$BLOCK" >> "$TIMELINE_FILE"
+
+[ "$LOCKED" = "1" ] && release_lock "$LOCKDIR"
 
 exit 0

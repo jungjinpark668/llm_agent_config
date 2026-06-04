@@ -6,26 +6,8 @@ VAULT="$(dirname "$SCRIPT_DIR")/vault"
 CWD="$PWD"
 
 # --- Detect matching project by CWD name mapping ---
-REPO_NAME=$(basename "$CWD")
-MAPPED_NAME=$(echo "$REPO_NAME" | sed -e 's/ /-/g' -e 's/_/-/g' | tr '[:upper:]' '[:lower:]' | sed -e 's/--/-/g')
-MATCHED_PROJECT=""
-
-if [ -d "$VAULT/projects/$MAPPED_NAME" ]; then
-    MATCHED_PROJECT="$MAPPED_NAME"
-else
-    for PROJECT_DIR in "$VAULT/projects"/*/; do
-        [ -d "$PROJECT_DIR" ] || continue
-        PROJECT_NAME=$(basename "$PROJECT_DIR")
-        IFS='-' read -ra KEYWORDS <<< "$PROJECT_NAME"
-        for KEYWORD in "${KEYWORDS[@]}"; do
-            [ ${#KEYWORD} -lt 4 ] && continue
-            if echo "$CWD" | grep -qi "$KEYWORD"; then
-                MATCHED_PROJECT="$PROJECT_NAME"
-                break 2
-            fi
-        done
-    done
-fi
+source "$SCRIPT_DIR/lib/detect-project.sh"
+MATCHED_PROJECT=$(detect_project "$CWD" "$VAULT")
 
 # --- List checkpoint headers (one line each) ---
 CHECKPOINT_LINES=""
@@ -65,7 +47,27 @@ else
     AUDIT_REMINDER="VAULT AUDIT: No audit on record. Run /obsidian-audit to check vault health."
 fi
 
-# --- Output (~8 lines) ---
+# --- Collect per-project default notes (manifest "## always" list) ---
+# These are injected in full so the session always starts with baseline context.
+DEFAULT_NOTES=""
+if [ -n "$MATCHED_PROJECT" ]; then
+    MANIFEST="$VAULT/projects/$MATCHED_PROJECT/context-map.md"
+    if [ -f "$MANIFEST" ]; then
+        while IFS= read -r NOTE; do
+            [ -z "$NOTE" ] && continue
+            NOTE_PATH="$VAULT/projects/$MATCHED_PROJECT/$NOTE"
+            [ -f "$NOTE_PATH" ] || continue
+            BODY=$(awk 'NR==1 && $0=="---"{fm=1; next} fm==1 && $0=="---"{fm=0; next} fm!=1{print}' "$NOTE_PATH")
+            DEFAULT_NOTES+="--- $NOTE ---"$'\n'"$BODY"$'\n\n'
+        done < <(awk '
+            /^##[[:space:]]+always[[:space:]]*$/ {grab=1; next}
+            /^##[[:space:]]/ {grab=0}
+            grab && /^-[[:space:]]/ {sub(/^-[[:space:]]*/,""); print}
+        ' "$MANIFEST")
+    fi
+fi
+
+# --- Output (~8 lines + any default notes) ---
 echo "Vault: $VAULT"
 if [ -n "$MATCHED_PROJECT" ]; then
     echo "Project documentation detected: $VAULT/projects/$MATCHED_PROJECT"
@@ -78,3 +80,8 @@ if [ -n "$CHECKPOINT_LINES" ]; then
 fi
 [ -n "$AUDIT_REMINDER" ] && echo "$AUDIT_REMINDER"
 echo "Load vault context via subagent or obsidian-notes skill when starting project work."
+if [ -n "$DEFAULT_NOTES" ]; then
+    echo ""
+    echo "=== Default project context (auto-loaded from context-map.md) ==="
+    echo -n "$DEFAULT_NOTES"
+fi
