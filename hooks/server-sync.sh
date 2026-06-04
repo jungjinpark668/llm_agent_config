@@ -25,6 +25,16 @@ REMOTE_DIR="llm_agent_config"
 
 log() { echo "$(date '+%Y-%m-%d %H:%M'): $*" >> "$LOG_FILE"; }
 
+# ── Single-run lock (cron fires every 5 min; a slow sync must not overlap and
+#    collide with the next run on .git/index.lock) ──
+source "$SCRIPT_DIR/lib/locking.sh"
+LOCKDIR="$SCRIPT_DIR/.sync.lock"
+if ! acquire_lock "$LOCKDIR" 0; then
+    log "Another sync run is active — skipping"
+    exit 0
+fi
+trap 'release_lock "$LOCKDIR"' EXIT
+
 # ── Log rotation (keep last 500 lines) ──
 if [ -f "$LOG_FILE" ] && [ "$(wc -l < "$LOG_FILE")" -gt 1000 ]; then
     tail -500 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"

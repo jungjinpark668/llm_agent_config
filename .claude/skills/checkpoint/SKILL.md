@@ -63,16 +63,16 @@ Anything unresolved, waiting on the user, or stuck. "None" if clear.
 
 ## Session Tag
 
-After writing the checkpoint, **always** write a one-line session tag file:
+After writing the checkpoint, **always** write a one-line session tag file. It is namespaced per session so concurrent sessions never overwrite each other's tag:
 
 ```bash
-echo "<topic>" > ~/.claude/.session-topic
+echo "<topic>" > ~/.claude/.session-topic-$CLAUDE_CODE_SESSION_ID
 ```
 
 Where `<topic>` is the parenthetical from your checkpoint header. For example, if your header is `## Checkpoint — 2026-04-14 (API auth refactor)`, write:
 
 ```bash
-echo "API auth refactor" > ~/.claude/.session-topic
+echo "API auth refactor" > ~/.claude/.session-topic-$CLAUDE_CODE_SESSION_ID
 ```
 
 This tag tells the pre-compact hook which checkpoint to recover if compaction fires.

@@ -4,6 +4,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VAULT="$(dirname "$SCRIPT_DIR")/vault"
 SNAPSHOT="$VAULT/agent/pre-compact-snapshot.md"
+source "$SCRIPT_DIR/lib/locking.sh"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
 SEPARATOR="---SNAPSHOT---"
 GIT_TIMEOUT=3
@@ -53,6 +54,13 @@ ENTRY_EOF
 )
 
 # --- Keep last 5 snapshots in file ---
+# Serialize concurrent compactions and write via temp-file + atomic mv so the
+# read-trim-append is never interrupted and no snapshot is lost on overwrite.
+LOCKDIR="$SNAPSHOT.lock"
+LOCKED=0
+if acquire_lock "$LOCKDIR" 3; then LOCKED=1; fi
+
+TMP="$SNAPSHOT.tmp.$$"
 if [ -f "$SNAPSHOT" ]; then
     EXISTING=$(awk -v sep="$SEPARATOR" '
         BEGIN { idx=0; entry="" }
@@ -71,11 +79,13 @@ if [ -f "$SNAPSHOT" ]; then
             }
         }
     ' "$SNAPSHOT")
-    echo "$EXISTING" > "$SNAPSHOT"
-    echo "$ENTRY" >> "$SNAPSHOT"
+    { echo "$EXISTING"; echo "$ENTRY"; } > "$TMP"
 else
-    echo "$ENTRY" > "$SNAPSHOT"
+    echo "$ENTRY" > "$TMP"
 fi
+mv -f "$TMP" "$SNAPSHOT"
+
+[ "$LOCKED" = "1" ] && release_lock "$LOCKDIR"
 
 # --- Output ---
 echo "Compacted. Snapshot saved to vault."

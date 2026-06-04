@@ -40,7 +40,8 @@ COMMON=$(git rev-parse --git-common-dir)
 **Main repo:** Use the sync hook as-is. No changes.
 
 **Worktree:** Create a separate server directory to avoid overwriting main's
-files. Use the sync hook's `REMOTE_DIR_OVERRIDE` env var instead of
+files. Use the sync hook's remote-target override env var (commonly
+`REMOTE_DIR_OVERRIDE`; some hooks use `REMOTE_ROOT`/`REMOTE_HOST`) instead of
 replicating rsync logic.
 
 - Naming: `<original_dir_name>_wt_<branch_name>`

@@ -4,8 +4,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VAULT="$(dirname "$SCRIPT_DIR")/vault"
 SESSION_LOG="$VAULT/agent/session-log.md"
 
-# Clean up session tag
-rm -f "$HOME/.claude/.session-topic"
+# Clean up this session's tag only (namespaced so concurrent sessions don't
+# delete each other's topic). Falls back to the legacy global path.
+SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}"
+if [ -n "$SESSION_ID" ]; then
+    rm -f "$HOME/.claude/.session-topic-$SESSION_ID"
+else
+    rm -f "$HOME/.claude/.session-topic"
+fi
 
 # Check if session log was updated today
 TODAY=$(date +%Y-%m-%d)
