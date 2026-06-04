@@ -36,17 +36,17 @@ Never run commands that modify state, write files, install packages, or connect 
 
 Evaluate the application across 9 categories. Each category gets a score from 0 to 10.
 
-| # | Category | What to check |
-|---|----------|---------------|
-| 1 | Command discoverability | Can users find available commands? Is there a menu, listing, or search? Is the subcommand structure logical and shallow (max 2 levels deep)? Are related commands grouped? |
-| 2 | Input convenience | Are there shortcuts or aliases for common commands? Tab completion support? Fuzzy matching for typos? Smart defaults that minimize required typing? Can the user accomplish frequent tasks with minimal keystrokes? |
-| 3 | Repeat execution | Can users re-run previous commands? Is there command history? Favorites or bookmarks? Templates for common workflows? Can users avoid retyping the same thing? |
-| 4 | Error feedback | Are error messages actionable (say what went wrong AND what to do)? Typo suggestions ("did you mean X?")? Input validation before execution? Recovery hints? Are errors distinguishable from normal output? |
-| 5 | Output clarity | Are results well-formatted and scannable? Progress indicators for long operations? Status summaries? Clear distinction between success and failure? Structured output option (JSON/CSV) for scripting? |
-| 6 | Navigation flow | Logical screen flow in TUI? Back/cancel support? Consistent keybindings? Breadcrumbs in nested views? Can the user always tell where they are? Escape hatch to quit from any screen? |
-| 7 | Configuration | Sensible defaults that work out of the box? Persistent user preferences? Easy customization without editing source? Config file documented? Not too many scattered config files? |
-| 8 | Help & onboarding | Built-in help accessible from any screen? Contextual hints for complex options? First-run guidance? Usage examples in help text (not just flag descriptions)? Man page or detailed docs? |
-| 9 | Accessibility & compatibility | Works across common terminals (iTerm, Terminal.app, Windows Terminal, tmux)? Color/no-color mode? Handles terminal resize? Graceful degradation when features unavailable? Respects NO_COLOR env var? |
+| #   | Category                      | What to check                                                                                                                                                                                                       |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Command discoverability       | Can users find available commands? Is there a menu, listing, or search? Is the subcommand structure logical and shallow (max 2 levels deep)? Are related commands grouped?                                          |
+| 2   | Input convenience             | Are there shortcuts or aliases for common commands? Tab completion support? Fuzzy matching for typos? Smart defaults that minimize required typing? Can the user accomplish frequent tasks with minimal keystrokes? |
+| 3   | Repeat execution              | Can users re-run previous commands? Is there command history? Favorites or bookmarks? Templates for common workflows? Can users avoid retyping the same thing?                                                      |
+| 4   | Error feedback                | Are error messages actionable (say what went wrong AND what to do)? Typo suggestions ("did you mean X?")? Input validation before execution? Recovery hints? Are errors distinguishable from normal output?         |
+| 5   | Output clarity                | Are results well-formatted and scannable? Progress indicators for long operations? Status summaries? Clear distinction between success and failure? Structured output option (JSON/CSV) for scripting?              |
+| 6   | Navigation flow               | Logical screen flow in TUI? Back/cancel support? Consistent keybindings? Breadcrumbs in nested views? Can the user always tell where they are? Escape hatch to quit from any screen?                                |
+| 7   | Configuration                 | Sensible defaults that work out of the box? Persistent user preferences? Easy customization without editing source? Config file documented? Not too many scattered config files?                                    |
+| 8   | Help & onboarding             | Built-in help accessible from any screen? Contextual hints for complex options? First-run guidance? Usage examples in help text (not just flag descriptions)? Man page or detailed docs?                            |
+| 9   | Accessibility & compatibility | Works across common terminals (iTerm, Terminal.app, Windows Terminal, tmux)? Color/no-color mode? Handles terminal resize? Graceful degradation when features unavailable? Respects NO_COLOR env var?               |
 
 ## Procedure
 
@@ -76,6 +76,10 @@ Evaluate the application across 9 categories. Each category gets a score from 0 
    - **P1** (important): cryptic error messages, no defaults forcing user to specify everything, no progress on long operations, hardcoded paths
    - **P2** (informational): could-be-better wording, missing aliases, cosmetic output formatting, minor help text gaps
 
+   **Behavioral contract annotation:** When a P1 finding's fix would change observable behavior (argument defaults, error message strings, stdout output, exit codes), annotate with `[CONTRACT]`. This signals the ux-reform agent to apply behavioral preservation rules.
+   
+   Example: `P1 [CONTRACT] src/cli.py:45 — Input convenience — No default for required --config`
+
 6. **Build the scorecard.**
 
 ## Scoring rubric
@@ -102,17 +106,17 @@ Return this exact structure:
 
 ## Summary
 
-| # | Category | Score | Findings |
-|---|----------|-------|----------|
-| 1 | Command discoverability | X/10 | N issues |
-| 2 | Input convenience | X/10 | N issues |
-| 3 | Repeat execution | X/10 | N issues |
-| 4 | Error feedback | X/10 | N issues |
-| 5 | Output clarity | X/10 | N issues |
-| 6 | Navigation flow | X/10 | N issues |
-| 7 | Configuration | X/10 | N issues |
-| 8 | Help & onboarding | X/10 | N issues |
-| 9 | Accessibility & compatibility | X/10 | N issues |
+| #   | Category                      | Score | Findings |
+| --- | ----------------------------- | ----- | -------- |
+| 1   | Command discoverability       | X/10  | N issues |
+| 2   | Input convenience             | X/10  | N issues |
+| 3   | Repeat execution              | X/10  | N issues |
+| 4   | Error feedback                | X/10  | N issues |
+| 5   | Output clarity                | X/10  | N issues |
+| 6   | Navigation flow               | X/10  | N issues |
+| 7   | Configuration                 | X/10  | N issues |
+| 8   | Help & onboarding             | X/10  | N issues |
+| 9   | Accessibility & compatibility | X/10  | N issues |
 
 **Overall: XX/90 (X.X/10)**
 
@@ -129,11 +133,11 @@ Description of the finding.
 
 Issues ranked by severity for the ux-reform agent:
 
-| Priority | File:Line | Category | Description |
-|----------|-----------|----------|-------------|
-| P0 | src/cli.py:12 | Error feedback | --help flag crashes with ImportError |
-| P1 | src/main.py:45 | Input convenience | No default for required --config flag |
-| P2 | src/app.py:89 | Output clarity | Progress bar missing for batch processing |
+| Priority | File:Line      | Category          | Description                               |
+| -------- | -------------- | ----------------- | ----------------------------------------- |
+| P0       | src/cli.py:12  | Error feedback    | --help flag crashes with ImportError      |
+| P1       | src/main.py:45 | Input convenience | No default for required --config flag     |
+| P2       | src/app.py:89  | Output clarity    | Progress bar missing for batch processing |
 ```
 
 ## Language-specific: Python

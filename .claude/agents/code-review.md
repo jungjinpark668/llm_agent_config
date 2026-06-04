@@ -22,17 +22,17 @@ The code-context includes: Conventions, Test patterns, Source manifest, and Qual
 
 Evaluate the codebase across 9 categories. Each category gets a score from 0 to 10.
 
-| # | Category | What to check |
-|---|----------|---------------|
-| 1 | Think before coding | Are assumptions surfaced? Are tradeoffs documented? Do methods with multiple valid interpretations clarify their behavior? |
-| 2 | Simplicity first | No speculative features, no premature abstractions, no over-engineered patterns for single-use code. Check for bare `except:` clauses and overly broad exception handling in non-boundary code. |
-| 3 | Surgical changes | Are recent changes minimal and focused? Check git log if available. No drive-by refactoring, no style drift. |
-| 4 | Goal-driven execution | Do functions have clear success criteria? Is there test coverage for non-trivial logic? |
-| 5 | Class isolation | Orchestration (calling classes in sequence, passing outputs between them) belongs in scripts/tests, not inside classes. Still a principle, but apply judgment: embedded sub-components that genuinely improve quality/readability are acceptable. The test: would removing the internal class break core functionality, or just move orchestration outside? |
-| 6 | Change strategy | Are existing utilities reused rather than duplicated? Are existing functions extended via optional parameters rather than copied? |
-| 7 | Naming and structure | Convention adherence (naming, file organization, import style). Check for unused imports, dead code, circular imports. |
-| 8 | Comment style | Default is no comments. When present, comments explain WHY not WHAT. Docstring format matches project convention. No stale or misleading comments. |
-| 9 | Project conventions | Check against the specific conventions documented in code-context.md: naming patterns, import style, class structure, error handling, property patterns, numeric conventions, reusable utilities. |
+| #   | Category              | What to check                                                                                                                                                                                                                                                                                                                                               |
+| --- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Think before coding   | Are assumptions surfaced? Are tradeoffs documented? Do methods with multiple valid interpretations clarify their behavior?                                                                                                                                                                                                                                  |
+| 2   | Simplicity first      | No speculative features, no premature abstractions, no over-engineered patterns for single-use code. Check for bare `except:` clauses and overly broad exception handling in non-boundary code.                                                                                                                                                             |
+| 3   | Surgical changes      | Are recent changes minimal and focused? Check git log if available. No drive-by refactoring, no style drift.                                                                                                                                                                                                                                                |
+| 4   | Goal-driven execution | Do functions have clear success criteria? Is there test coverage for non-trivial logic?                                                                                                                                                                                                                                                                     |
+| 5   | Class isolation       | Orchestration (calling classes in sequence, passing outputs between them) belongs in scripts/tests, not inside classes. Still a principle, but apply judgment: embedded sub-components that genuinely improve quality/readability are acceptable. The test: would removing the internal class break core functionality, or just move orchestration outside? |
+| 6   | Change strategy       | Are existing utilities reused rather than duplicated? Are existing functions extended via optional parameters rather than copied?                                                                                                                                                                                                                           |
+| 7   | Naming and structure  | Convention adherence (naming, file organization, import style). Check for unused imports, dead code, circular imports.                                                                                                                                                                                                                                      |
+| 8   | Comment style         | Default is no comments. When present, comments explain WHY not WHAT. Docstring format matches project convention. No stale or misleading comments.                                                                                                                                                                                                          |
+| 9   | Project conventions   | Check against the specific conventions documented in code-context.md: naming patterns, import style, class structure, error handling, property patterns, numeric conventions, reusable utilities.                                                                                                                                                           |
 
 ## Procedure
 
@@ -77,17 +77,17 @@ Return this exact structure as your response:
 
 ## Summary
 
-| # | Category | Score | Findings |
-|---|----------|-------|----------|
-| 1 | Think before coding | X/10 | N issues |
-| 2 | Simplicity first | X/10 | N issues |
-| 3 | Surgical changes | X/10 | N issues |
-| 4 | Goal-driven execution | X/10 | N issues |
-| 5 | Class isolation | X/10 | N issues |
-| 6 | Change strategy | X/10 | N issues |
-| 7 | Naming and structure | X/10 | N issues |
-| 8 | Comment style | X/10 | N issues |
-| 9 | Project conventions | X/10 | N issues |
+| #   | Category              | Score | Findings |
+| --- | --------------------- | ----- | -------- |
+| 1   | Think before coding   | X/10  | N issues |
+| 2   | Simplicity first      | X/10  | N issues |
+| 3   | Surgical changes      | X/10  | N issues |
+| 4   | Goal-driven execution | X/10  | N issues |
+| 5   | Class isolation       | X/10  | N issues |
+| 6   | Change strategy       | X/10  | N issues |
+| 7   | Naming and structure  | X/10  | N issues |
+| 8   | Comment style         | X/10  | N issues |
+| 9   | Project conventions   | X/10  | N issues |
 
 **Overall: XX/90 (X.X/10)**
 
@@ -104,11 +104,15 @@ Description of the finding.
 
 Issues ranked by severity for the code-reform agent:
 
-| Priority | File:Line | Category | Description |
-|----------|-----------|----------|-------------|
-| P0 | src/module/file.py:123 | Class isolation | Internal instantiation of OtherClass |
-| P1 | src/utils/helpers.py:45 | Simplicity first | Bare except clause swallows all errors |
-| P2 | src/module/file.py:67 | Naming and structure | Method uses camelCase instead of snake_case |
+| Priority | File:Line               | Category             | Description                                 | Risk |
+| -------- | ----------------------- | -------------------- | ------------------------------------------- | ---- |
+| P0       | src/module/file.py:123  | Class isolation      | Internal instantiation of OtherClass        | HIGH |
+| P1       | src/utils/helpers.py:45 | Simplicity first     | Bare except clause swallows all errors      | LOW  |
+| P2       | src/module/file.py:67   | Naming and structure | Method uses camelCase instead of snake_case | LOW  |
+
+Risk levels (helps reform agent decide caution level):
+- **HIGH**: touches public API, module `__init__`, CLI entry point, cross-file imports, or orchestration logic
+- **LOW**: internal to a single function/method, no external callers
 ```
 
 ## Language-specific: Python
