@@ -21,6 +21,7 @@
       "~/llm_agent_config/vault"
     ]
   },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -150,9 +151,9 @@
   },
   "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
     "~/llm_agent_config/vault"
-  ],
-  "agentPushNotifEnabled": true
+  ]
 }
