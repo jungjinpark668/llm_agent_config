@@ -27,7 +27,9 @@ Non-issues: Cmd+Space / Ctrl+Space / Opt+Cmd+Space (input switching + Spotlight 
 
 ## Follow-up findings (same day)
 
-- Disabling a Spaces hotkey in the plist does not release a registration the Dock already holds — Ctrl+1 stayed captured until `killall Dock`. Logout/login is the fallback.
+- The symbolic-hotkeys plist and the WindowServer's live hotkey table can diverge. `defaults write ... enabled=0` + `activateSettings -u` released some IDs but not all, and **`killall Dock` made it worse** — the Dock re-asserted ALL Spaces hotkeys live at launch even though the plist said disabled. Do not use `killall Dock` for this.
+- Ground truth and fix is the SkyLight private API: `CGSIsSymbolicHotKeyEnabled(id)` to inspect, `CGSSetSymbolicHotKeyEnabled(id, false)` to disable live. Twenty-line C program, `dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight")` + `dlsym`, compile with plain clang. Applied to IDs 52, 118-122; verified all live-disabled.
+- If the hotkeys come back after reboot/login (Dock may re-assert), re-run that snippet. Plist remains disabled, so System Settings GUI shows them unchecked either way.
 - The Files right-sidebar panel (v0.64.14) has no bindable "open file" shortcut: the tree opens files by double-click only (`outlineView.doubleAction` in `Sources/FileExplorerView.swift`); tree keys are J/K / Ctrl+N/P / arrows (move), H/L (collapse/expand), `/` (type-ahead select), Esc. Return opens files only in the panel's search-box results flow.
 
 ## Revert
