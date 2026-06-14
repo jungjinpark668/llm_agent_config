@@ -21,3 +21,10 @@
 **Key decisions:** Verify scan health (scan_init_test --power) before each campaign; never touch PSU on a live board (--skip-power always); run in tmux (RPi link drops constantly).
 **Open:** exact 1 GHz needs a VDD_RO trim (not done — touches power); coarse0/fine0 RO >19.6 GHz unmeasurable with DMM; characterization only at 1.0 V (no voltage sweep yet); an adaptive per-config divider would replace the two-run workaround.
 **Connections:** [[ro-usage-guide]] ← [[2026-06-14-ro-full-characterization]] (usage recipes built on the characterization data); closes the "clk_main_div_o measurement instrument" open item from [[silicon-functional-test-recipe]] (34410A works within 3 Hz-300 kHz via the divider).
+
+## 2026-06-15
+**Worked on:** DSU scan-bypass memory verification — `scratch/dsu_mem_scan_test.py`, written then run on silicon (RPi bench).
+**What worked:** Staged + clock-gated bypass protocol passed first try — MWE (bank A addr 0) and sampled both-bank run (addrs 0/1/25/114/255/256/510/511) all match. Gating `sc_clk_gate_dsu_en` around each op (clk idle except the commit/read window) makes writes disturb-free; addr/data settle before any clock edge. Different seeds per bank confirmed A and B are separate memories (no aliasing).
+**What failed:** Nothing on-chip. Plan went through ~6 user-corrected revisions first (DSU = Data *Streaming* Unit not Stimulus; both banks are single-port 1RW tested independently, not A-read/B-write; enables can be hoisted per-pass since clk is gated; RO-only clock, no ext clk).
+**Key decisions:** Clock = RO0 only (coarse8/fine15, div16); enables hoisted out of the per-word loop, parked once per pass; gate transitions roundtrip+retry against RO-induced bit-slips; ran with --skip-power on the live board.
+**Connections:** [[dsu-mem-scan-test]] applies the [[dsu-architecture]] bypass path with the [[ro-usage-guide]] clock setup; reused the `build_and_scan_in()` lesson from [[silicon-functional-test-recipe]].
