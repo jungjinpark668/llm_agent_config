@@ -13,3 +13,11 @@
 **Key decisions:** First silicon test = bf_mode 00 (frozen weights by construction), smoke-sized 30-word run; no vector regeneration (fetch archived test_vec); notes-only deliverable, RPi script is a follow-up plan.
 **Open:** archived test_vec + sim defines location; RO characterization CSV; clk_main_div_o measurement instrument; pass-2 alignment verification.
 **Connections:** [[silicon-functional-test-recipe]] ← [[design-jj-sim-test-flow]] (recipe is a 1:1 mapping of the verified TB sequence onto scan operations)
+
+## 2026-06-13/14
+**Worked on:** First-silicon RO frequency measurement, then full RO0/RO1 coarse×fine characterization + clock-divider validation on the RPi bench.
+**What worked:** Cross-divider consistency check (measure at 2 dividers, scaled freq must agree) was the key tool — it exposed that all earlier "results" were the 34410A no-signal floor (~640 Hz), and later confirmed real signal at 0.006-0.02% spread. PSU current is a probe-independent RO-alive test (VDD_RO 0.02→0.17 mA, core +2 mA when RO enabled). Two complementary divider runs (sel 14/15 fast; sel 1-4 slow) merged by cluster-agreement covered the ~10^6× RO range that no single divider pair can. coarse=binary ÷2 (1.99×), fine=linear-in-period (R²=0.9999).
+**What failed:** Root cause of the flat ~640 Hz was a physical probe connection (user fixed it), NOT instrument mode or chip — wasted a coarse/fine sweep + a divider ladder on floor data before catching it. Lesson: monotonic fine-tracking is NOT proof of real signal (aliased beats track too); only cross-divider agreement is. First sweep used div 13/14 — too low, floored the fast corner; needed 14/15.
+**Key decisions:** Verify scan health (scan_init_test --power) before each campaign; never touch PSU on a live board (--skip-power always); run in tmux (RPi link drops constantly).
+**Open:** exact 1 GHz needs a VDD_RO trim (not done — touches power); coarse0/fine0 RO >19.6 GHz unmeasurable with DMM; characterization only at 1.0 V (no voltage sweep yet); an adaptive per-config divider would replace the two-run workaround.
+**Connections:** [[ro-usage-guide]] ← [[2026-06-14-ro-full-characterization]] (usage recipes built on the characterization data); closes the "clk_main_div_o measurement instrument" open item from [[silicon-functional-test-recipe]] (34410A works within 3 Hz-300 kHz via the divider).
