@@ -20,6 +20,9 @@
 **/projects/
 **/.project_root
 **/.nfs*
+**/log
+**/reference
+**/scratch
 
 # Ignore vault Obsidian internals
 vault/.obsidian/workspace
