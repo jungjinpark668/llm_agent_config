@@ -1,0 +1,22 @@
+# Learned behavioral patterns. Each has a project (global or project name) and
+# a confidence (0.0-1.0): raise when validated, lower when contradicted, prune <0.3.
+
+instincts:
+  - id: rpi-gpio-exclusive-precheck
+    project: beamforming-lms-tracker-intel16-test
+    confidence: 0.95
+    trigger: >
+      About to launch any RPi job that drives the chip over GPIO — rpi-sync
+      then run, a tmux launch, or any ssh command that scans / resets /
+      clocks / reconfigures the chip.
+    action: >
+      ALWAYS first check the Pi for a concurrent run:
+      `ssh <pi> "tmux ls 2>/dev/null; pgrep -af 'venv/bin/python' | grep -v grep"`.
+      If any chip-test tmux session (ro_freq/ro_temp/divcheck/scan_*) or
+      scratch/scripts python process is active, do NOT launch — report what is
+      running and wait (or ask) before starting. GPIO is one shared physical
+      resource; concurrent drivers silently corrupt scan/clock state. No
+      parallelism of RPi-GPIO work, ever.
+    evidence: >
+      User directive 2026-06-14. Physical chip test; RPi bit-bangs scan chains,
+      clock, and resets on shared BCM pins. See rpi-gpio-single-run-rule.md.
