@@ -28,3 +28,10 @@
 **What failed:** Nothing on-chip. Plan went through ~6 user-corrected revisions first (DSU = Data *Streaming* Unit not Stimulus; both banks are single-port 1RW tested independently, not A-read/B-write; enables can be hoisted per-pass since clk is gated; RO-only clock, no ext clk).
 **Key decisions:** Clock = RO0 only (coarse8/fine15, div16); enables hoisted out of the per-word loop, parked once per pass; gate transitions roundtrip+retry against RO-induced bit-slips; ran with --skip-power on the live board.
 **Connections:** [[dsu-mem-scan-test]] applies the [[dsu-architecture]] bypass path with the [[ro-usage-guide]] clock setup; reused the `build_and_scan_in()` lesson from [[silicon-functional-test-recipe]].
+
+## 2026-06-16
+**Worked on:** cdot_product silicon fmax test (Task B) on design_jj — and a long methodology debug that overturned an early wrong answer.
+**What worked:** Final fmax = 807.7 MHz (bit-exact 2050/2050; next code 845 MHz fails). Bisection over the raw-RO ladder with an AB-pointer guard + clean-bank discipline, after a cold setup_power cycle restored the chip baseline. Details in [[cdot-fmax-silicon-result]].
+**What failed (save future hours):** (1) early "GHz passes" were STALE-DATA artifacts — skip-load + unreset bank B, readback returned a prior record; the AB-pointer guard fixes it. (2) The datapath runs on the UNDIVIDED RO; the clk divider only feeds a measurement pad — dividing the axis mislabeled 3273 MHz as 1636 MHz. (3) Bypass-writing bank B to "clear" it corrupts the port-B controller (AB=511). (4) A partial (short-stimulus) bank over-runs and wraps AB; use the full 512-depth bank. (5) Extended testing degraded the chip (slow baseline went 2050→8/2050); power-cycle + scan-init check restored it.
+**Key decisions:** Trust the chip test over the 2 GHz prior; report the adjacent pass/fail RO-code pair (resolution = RO code spacing). Each fmax point loads bank A once at a slow clock, streams at the test clock.
+**Connections:** [[cdot-fmax-silicon-result]] extends [[cdot-product-datapath-test]] and uses the bring-up from [[chip-init-sequence]]; clock fact ties to [[chip-top-architecture]].
