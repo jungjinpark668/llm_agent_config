@@ -170,5 +170,6 @@
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
     "~/llm_agent_config/vault"
-  ]
+  ],
+  "model": "claude-opus-4-8[1m]"
 }
