@@ -146,7 +146,23 @@
     "command": "~/.claude/scripts/context-bar.sh"
   },
   "enabledPlugins": {
-    "dx@ykdojo": true
+    "dx@ykdojo": true,
+    "caveman@caveman": true,
+    "ponytail@ponytail": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
   },
   "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
