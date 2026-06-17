@@ -597,3 +597,45 @@ Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remo
 | `detect-stale-notes.sh` | Write/Edit | Warn when config changes but docs don't |
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
+
+---
+
+## Plugins
+
+Two third-party Claude Code plugins are installed and active by default. They
+change how Claude writes in every session, so they are documented here rather
+than left buried in `settings.json`.
+
+| Plugin | What it does | Skills | Turn it off |
+|--------|--------------|--------|-------------|
+| `caveman@caveman` | Compresses replies ~65–75% ("caveman speak"), keeps full technical accuracy | `/caveman`, `/caveman-commit`, `/caveman-review`, `/caveman-compress`, `/caveman-stats`, `/caveman-help` | say "normal mode" or "stop caveman"; level via `/caveman lite\|full\|ultra` |
+| `ponytail@ponytail` | Forces the simplest solution that works (YAGNI, stdlib first, no unrequested abstractions) | `/ponytail`, `/ponytail-review`, `/ponytail-audit`, `/ponytail-debt`, `/ponytail-help` | say "normal mode" or "stop ponytail"; level via `/ponytail lite\|full\|ultra` |
+
+Both default to `full` mode and activate at session start through their own
+plugin hooks, which run alongside the vault hooks without touching them.
+Always-on cost is roughly 2,000 tokens per session (caveman ~1,270, ponytail
+~780). Because both compress and minimize output, they pull against the
+`humanizer` prose rules and the vault note-quality gate, so say "normal mode"
+in a session where you want full, natural notes.
+
+### Managing them
+
+Installed via the native plugin marketplace, not vendored into this repo:
+
+```bash
+claude plugin list                        # show installed plugins
+claude plugin disable caveman@caveman     # turn off without removing
+claude plugin enable caveman@caveman
+claude plugin uninstall ponytail@ponytail # remove entirely
+claude plugin update caveman@caveman      # pull latest (restart to apply)
+```
+
+The install is recorded in `.claude/settings.json` under `enabledPlugins` and
+`extraKnownMarketplaces`, which sync to the servers. The plugin files live in
+`~/.claude/plugins/` and are not part of this repo, so `setup.sh` does not
+restore them. On a fresh machine, reinstall with:
+
+```bash
+claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
+claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
+```
