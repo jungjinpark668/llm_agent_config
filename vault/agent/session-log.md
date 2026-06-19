@@ -35,3 +35,19 @@
 **What failed (save future hours):** (1) early "GHz passes" were STALE-DATA artifacts — skip-load + unreset bank B, readback returned a prior record; the AB-pointer guard fixes it. (2) The datapath runs on the UNDIVIDED RO; the clk divider only feeds a measurement pad — dividing the axis mislabeled 3273 MHz as 1636 MHz. (3) Bypass-writing bank B to "clear" it corrupts the port-B controller (AB=511). (4) A partial (short-stimulus) bank over-runs and wraps AB; use the full 512-depth bank. (5) Extended testing degraded the chip (slow baseline went 2050→8/2050); power-cycle + scan-init check restored it.
 **Key decisions:** Trust the chip test over the 2 GHz prior; report the adjacent pass/fail RO-code pair (resolution = RO code spacing). Each fmax point loads bank A once at a slow clock, streams at the test clock.
 **Connections:** [[cdot-fmax-silicon-result]] extends [[cdot-product-datapath-test]] and uses the bring-up from [[chip-init-sequence]]; clock fact ties to [[chip-top-architecture]].
+
+## 2026-06-19 — bb_proc test pipeline + first silicon smoke (beamforming-lms-tracker-intel16-test)
+**Worked on:** Built `test_bb_proc` pipeline (run_py_sim→generate_test_data→run_test→verify_test→run_power) for design_jj baseband processor on `psylab_comm`; locked 500MHz clock; ran first on-chip smoke.
+**What worked:**
+- Clock: RO0 coarse=1/fine=15 + vdd_main=vdd_ro=1.015V → 499.74MHz. `cache/ro_test/ro0_sweep.csv` was STALE (~17% high vs chip today); remapped on-chip (c1f15=490 @1.0V, vdd-trim +1.5% → 500). Reference `Intel_neurosoc_test/ro1_sweep.csv` unusable (flat ~0.19MHz).
+- Offline pipeline (8 modules in `src/bb_proc_test/`): config, storage (lossless minimal-int), chip_format (DSU pack/unpack round-trip exact), signals, py_sim (serial GSC/LMS float golden), test_data_gen (parallel), chip_run, CLI. All `python -m` self-checks pass.
+- Smoke (bf_mode=0 static, 1 block/16 words, sel 0 y) ran end-to-end DONE_EXIT_0 @500MHz/1.015V; chip produced STRUCTURED non-zero port-B data (set-bits 285-462/word) => cdot datapath computed. Full chain sim→golden→DSU→chip→readback works.
+**What failed / learned (saves re-discovery):**
+- RPi link (143.215.153.94) VERY flaky — drops every ~1-2min; need background poll-until-reachable before every ssh op. tmux runs persist across drops (launch once, monitor).
+- `ScanController.scan_in()` reuses a CACHED vector; staged `set_input_value` ignored unless you call `build_and_scan_in()` (= stage_current_inputs+scan_in). Use build_and_scan_in everywhere.
+- `sc_sel_mem_write_buffer` + `sc_bf_mode` are cen_load-latched → changing sel needs a cen_load pulse.
+- `BBProc16nmTestCtrl.reset()` toggles ALL rails (would wipe cen_load'd init) → use isolated `ctrl._rstn_dsu.set()` to re-arm DSU only.
+- `sc_dsu_pA_r_last` is a 1-cycle pulse; compute is ~150ns vs seconds/scan-poll → poll misses it. Use fixed settle or treat data-present as done.
+**Open:** port-B y decode (40b entry layout from `dsu/mem_write_buffer.sv` + cdot pipeline-latency offset) → build in verify.py against golden; verify.py behavioral metrics (MAE/BER/SER/phi/SINR, no plots); run_power (pA_repeat replay + AdaptiveGPSController I/V); continuous re_comp_start + adaptive (gsc/lms) multi-block.
+**Key decisions:** golden = float, behavioral-similarity compare (NO bit-exact); lossless storage (int dtype only where already integer); 1 data block = 1 full DSU bank; chip records 1 sel/pass (multi-sel = N passes, re-cen_load + arm per sel).
+**Connections:** [[silicon-functional-test-recipe]] [[dsu-architecture]] [[chip-init-sequence]]
