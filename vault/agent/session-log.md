@@ -51,3 +51,10 @@
 **Open:** port-B y decode (40b entry layout from `dsu/mem_write_buffer.sv` + cdot pipeline-latency offset) → build in verify.py against golden; verify.py behavioral metrics (MAE/BER/SER/phi/SINR, no plots); run_power (pA_repeat replay + AdaptiveGPSController I/V); continuous re_comp_start + adaptive (gsc/lms) multi-block.
 **Key decisions:** golden = float, behavioral-similarity compare (NO bit-exact); lossless storage (int dtype only where already integer); 1 data block = 1 full DSU bank; chip records 1 sel/pass (multi-sel = N passes, re-cen_load + arm per sel).
 **Connections:** [[silicon-functional-test-recipe]] [[dsu-architecture]] [[chip-init-sequence]]
+
+## 2026-06-19 (cont) — SILICON SMOKE PASSED, full pipeline validated
+**Result:** bf_mode=0 static cdot validated bit-exact on chip @500MHz/1.015V. chip bf_w_out (port-B sel0) == integer MAC of loaded ints, 50/50 lag0. verify.py behavioral: MAE=0.0034, corr=0.99998 vs float golden. Full chain works: sim->golden->DSU->chip->readback->verify->PASS.
+**Root-cause fixed:** first smoke gave incoherent y. Cause = DSU bank-A bypass write bit-slip under running RO (8/16 words corrupt round 0). Fix = load_dsu_sram write-verify-retry (readback bankA, re-write mismatched addrs, converged round 4). Bank A now bit-correct -> cdot coherent.
+**Port-B sel0 decode (VALIDATED, in chip_format.unpack_portB_y):** 25 entries/word, entry k at bits[40k+39:40k] LSB-first; real=high20 signed, imag=low20 signed; y_float=y_int/2^16. Real design-written words have top-24 padding=0 (use to filter valid vs stale port-B words). pA_r_last is a 1-cycle pulse (poll misses; compute ~150ns); proceed on data, not the flag.
+**Open:** chip writes ~50/76 y per block (pipeline latency 6 + partial-word non-fire) - last partial word doesn't fire; verify uses valid run. bit-slip retry is SLOW for 512 words -> gate clock during DSU scan (perf). run_power (pA_repeat replay + AdaptiveGPSController I/V) not built. Other-sel port-B decoders (symbol sel11=psf_out21+psf_out21+sym4, wa, etc.) stubs. continuous re_comp_start + adaptive multi-block.
+**Connections:** [[silicon-functional-test-recipe]] [[dsu-architecture]]
