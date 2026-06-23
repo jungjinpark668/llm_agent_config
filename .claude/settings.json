@@ -21,6 +21,7 @@
       "~/llm_agent_config/vault"
     ]
   },
+  "model": "claude-opus-4-8[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -171,5 +172,5 @@
   "trustedDirectories": [
     "~/llm_agent_config/vault"
   ],
-  "model": "claude-opus-4-8[1m]"
+  "tui": "fullscreen"
 }
