@@ -71,3 +71,11 @@
 **Tried (no fix):** full re-stage (stage_design_init param'd with sel), reorder arm_dsu->set_record_sel->run_block, separate cen_load pulse. None switch sel_r.
 **Hypotheses for next:** (1) symbol/bf_w buffers not firing for SHORT block (76 samp ~20 sym < 22/word) so port-B keeps stale y — but bf_w fires every 5 samp, should write 15 words, yet reads y => points to sel_r not the fire. (2) cen_load synchronizer timing vs sel field. (3) a write-buffer enable I'm missing.
 **SOLID this session:** full pipeline built+validated; bf_mode=0 sel0 (y) BIT-EXACT + repeatable x3 @500MHz; bank-A bit-slip fixed (sticky verify). Remaining: sel-switch, then all-sels, then bf_mode 1/2/3 continuous (re_comp_start, port-B pB-address-continuation TBD).
+
+## 2026-06-23 — tsmc28 FPGA bridge compile (bb_proc bring-up)
+**Worked on:** Set up + compiled the TE0725 FPGA bridge for the bb_proc 28nm tapeout; cleaned `exec/rpi-sync`.
+**What worked:** Reused existing `gen_bridge.py` flow — one source CSV (`csv/bb_proc_bridge.csv`, 20 signals) generates `bridge.sv`/`bridge.xdc`; same CSV also feeds `test_drivers` `create_rpi_ports_from_csv()`, so FPGA + RPi never drift. FMC_DB pins came straight from the package xlsx "FOLC pin num"; all 20 resolved against `mb_db.json`. Built clean on sathe-srv2: WNS +7.5ns, 0 DRC, bit+mcs.
+**What failed:** sathe-srv1 stalled ~20 min loading Vivado off NFS (stuck at banner, 0 synth output), left orphaned procs. `pkill -f vivado_sr.tcl` over SSH self-killed the remote shell (pattern in its own cmdline). `> build.log` stayed empty (Vivado logs to vivado.log).
+**Key decisions:** SPI on RPi hardware-SPI pins GPIO8-11 (Pull=PU); clk_ext on EXTCLK; slow clocks + rest on spare GPIO (delegated); B34 = LVCMOS18 (--vdd_pst 1.8); no --invert-DB. bridge.sv/xdc stay gitignored (generated); CSV is tracked source.
+**Connections:** [[fpga-bridge-compile]] documents the full flow + gotchas; signals trace to [[chip-top-architecture]], [[spi-streaming-protocol]], [[scan-chain-architecture]].
+**Open:** Program TE0725 + bench bring-up; write the tsmc28 RPi test controller that consumes the same CSV.
