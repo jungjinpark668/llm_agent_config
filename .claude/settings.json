@@ -166,11 +166,11 @@
     }
   },
   "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "autoMemoryEnabled": false,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
     "~/llm_agent_config/vault"
-  ],
-  "tui": "fullscreen"
+  ]
 }
