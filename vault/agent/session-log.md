@@ -87,3 +87,11 @@
 **Key decisions:** clocks held external for the entire init (4 bypass bits scanned first, never touched; set_clock_ctrl choreography dropped as electrically equivalent); one clock object per pin for the whole process (SclkPin over SpiStream's lgpio for sclk); cycle counts parameterized with TB defaults, bench 30/3000 per spec; headers-on skips PSU ch1.
 **Open:** MISR nondeterminism campaign — discriminators: identical-predecessor double runs, longer/double priming, per-phase full-chain capture vs sim VCD (infra ready). Also promote the VCD control-event checker if reused.
 **Connections:** [[init-load-external-clock]] ← implemented by test_setup_init; [[ldo-header-engage]] read-back recipe silicon-confirmed in-flow.
+
+## 2026-07-06
+**Worked on:** bf_w write-buffer SPI read (wb_1) + probe ladder closing the MISR-nondeterminism root cause.
+**What worked:** Sim bf_w track extracted from pre-syn VCD (init loads exact, +/-1-LSB adaptation steps per clk_update tick, golden capture = init+1step); clk_update island-roundtrip proven alive on silicon via clk_o (after fixing the div_en=0 check bug); scan-path MISR fire-counter (read I) as SPI-independent proof.
+**What failed:** wb_1/wb_2 capture ZERO entries in every mode (ext scheduled, sync_div, forced-sync) -> update_w (clk_update rise synchronizer -> pulse, core.sv:930-964) never pulses on this die. This freezes all update-gated capture regs (adc->cdot, bf_w step) = the actual source of the per-run-random y words behind the MISR nondeterminism.
+**Key decisions:** verdicts always cross-checked through two paths (SPI TX and scan MISR counter) before concluding; physical stress probes (voltage) deferred to user decision.
+**Open:** voltage-sensitivity probe on read I; netlist review of the synchronizer block; mode survey to route around update_w.
+**Connections:** [[lfsr-misr-power-fmax-test]] ← update_w root cause; [[init-load-external-clock]] unaffected (init itself verified).
