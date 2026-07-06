@@ -79,3 +79,11 @@
 **Key decisions:** SPI on RPi hardware-SPI pins GPIO8-11 (Pull=PU); clk_ext on EXTCLK; slow clocks + rest on spare GPIO (delegated); B34 = LVCMOS18 (--vdd_pst 1.8); no --invert-DB. bridge.sv/xdc stay gitignored (generated); CSV is tracked source.
 **Connections:** [[fpga-bridge-compile]] documents the full flow + gotchas; signals trace to [[chip-top-architecture]], [[spi-streaming-protocol]], [[scan-chain-architecture]].
 **Open:** Program TE0725 + bench bring-up; write the tsmc28 RPi test controller that consumes the same CSV.
+
+## 2026-07-05
+**Worked on:** tsmc28 proper chip init through scan (test_setup_init.py, TB main-flow port with all-external clocks) + run_lfsr_misr.py rewired to the TB TEST_LFSR block; first silicon runs.
+**What worked:** Full Steps 0-6 init on silicon (headers-off pi_capture-verified 11x0, clean scan orientation, VDD_CORE_LOW after verify); lfsr_done=1 on every BIST run; stimulus proven against the pre-syn VCD by control-event sequence diff (sim == TB model exactly, 145 events; bench == TB + documented deviations); golden-format writer byte-identical round-trip; 3x repeatable 8332b scan-outs.
+**What failed:** MISR signature != golden AND differs on every run (4 runs, 4 signatures, warm or power-cycled) — real on-chip nondeterminism in the bf_w_out wb stream, NOT the scan read path (ruled out) and NOT cycle-count sensitivity (MISR steps per wb fire only).
+**Key decisions:** clocks held external for the entire init (4 bypass bits scanned first, never touched; set_clock_ctrl choreography dropped as electrically equivalent); one clock object per pin for the whole process (SclkPin over SpiStream's lgpio for sclk); cycle counts parameterized with TB defaults, bench 30/3000 per spec; headers-on skips PSU ch1.
+**Open:** MISR nondeterminism campaign — discriminators: identical-predecessor double runs, longer/double priming, per-phase full-chain capture vs sim VCD (infra ready). Also promote the VCD control-event checker if reused.
+**Connections:** [[init-load-external-clock]] ← implemented by test_setup_init; [[ldo-header-engage]] read-back recipe silicon-confirmed in-flow.
