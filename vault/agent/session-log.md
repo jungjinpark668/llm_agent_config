@@ -95,3 +95,11 @@
 **Key decisions:** verdicts always cross-checked through two paths (SPI TX and scan MISR counter) before concluding; physical stress probes (voltage) deferred to user decision.
 **Open:** voltage-sensitivity probe on read I; netlist review of the synchronizer block; mode survey to route around update_w.
 **Connections:** [[lfsr-misr-power-fmax-test]] ← update_w root cause; [[init-load-external-clock]] unaffected (init itself verified).
+
+## 2026-07-08
+**Worked on:** tsmc28 chip 3 IO bring-up completion + vault cleanup after root cause found
+**What worked:** rstn_spi D26→D28 bodge fixed ALL SPI failures — full ladder PASS first try (rx_req drop at exactly 2776, miso/tx_ready via in-process --spi-tx-check). Chip IO fully verified except mosi.
+**What failed:** Weeks of "chip broken" theories were bench artifacts — rx_req-drop detector invalid while dead rstn_spi held slave in reset; stale SPI-flash bitstream faked clk_ext deaths; powercard init zeroed VDD_TEST during diagnosis.
+**Key decisions:** Retired bogus fault maps (chip #1/#2 SPI verdicts, FMC→DB condemnation); consolidated debug arc into [[chip-io-bringup-results]] + [[rstn-spi-d28-remap]], deleted spi-pads-debug-status.md, rewrote working-context to current state.
+**Open:** mosi verification; deterministic LFSR/MISR golden mismatch on chip 3 (design-test); uncommitted bench code held per user.
+**Connections:** [[rstn-spi-d28-remap]] ← [[chip-io-bringup-results]] one dead trace invalidated every downstream SPI diagnosis
