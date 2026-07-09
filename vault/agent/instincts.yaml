@@ -22,7 +22,7 @@ instincts:
       clock, and resets on shared BCM pins. See rpi-gpio-single-run-rule.md.
 
   - id: chip-never-wrong-predict-first
-    project: global
+    project: beamforming-lms-tracker-tsmc28-test
     confidence: 0.9
     trigger: >
       Any bench/hardware result mismatches the golden/expected value.
@@ -36,12 +36,12 @@ instincts:
       a domain clock edge COMMITS them — verify every clocked config target
       got its commit edge before suspecting anything else.
     evidence: >
-      Designer doctrine (general rule, stated 2026-07-09). Case study:
-      projects/beamforming-lms-tracker-tsmc28-test/2026-07-09-weight-commit-debug-postmortem.md;
-      general note: areas/hardware-debug-method.md.
+      Designer doctrine (general rule, stated 2026-07-09). Validated same day:
+      tsmc28 SPI head mismatch was a missing clk_update commit edge (test-code
+      bug), not silicon — found in minutes once traced edge-by-edge in RTL.
 
   - id: mismatch-shape-triage
-    project: global
+    project: beamforming-lms-tracker-tsmc28-test
     confidence: 0.85
     trigger: >
       Classifying golden-vs-received mismatches in any data-path test.
@@ -55,3 +55,21 @@ instincts:
     evidence: >
       2026-07-09: lumping near-miss + garbage into one count fabricated fake
       corruption laws and a dead probe program; splitting them solved it.
+
+  - id: chip-behavior-notes-auto-append
+    project: beamforming-lms-tracker-tsmc28-test
+    confidence: 0.9
+    trigger: >
+      Any newly discovered/verified chip behavior (RTL mechanism, timing,
+      register semantics, silicon-observed behavior) during any task.
+    action: >
+      Automatically append the finding to the matching EXISTING vault
+      chip-behavior note (cdot datapath, gsc-lms datapath, spi protocol,
+      scan-chain, clock/power, etc.) with file:line citations. Note length
+      does not matter; correctness does. Also CORRECT any existing statement
+      the new finding contradicts — never leave a known-wrong claim standing.
+      Do not create new notes for this; extend the existing architecture set.
+    evidence: >
+      User directive 2026-07-09 ("keep updating chip behavior context...
+      keep adding the note what you found; no care about length I only care
+      whether note is correct or not").
