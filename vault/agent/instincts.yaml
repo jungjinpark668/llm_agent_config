@@ -20,3 +20,38 @@ instincts:
     evidence: >
       User directive 2026-06-14. Physical chip test; RPi bit-bangs scan chains,
       clock, and resets on shared BCM pins. See rpi-gpio-single-run-rule.md.
+
+  - id: chip-never-wrong-predict-first
+    project: global
+    confidence: 0.9
+    trigger: >
+      Any bench/hardware result mismatches the golden/expected value.
+    action: >
+      Standing assumption: the DUT is never wrong — the fault is in the test
+      code, golden model, or stimulus schedule. NO hardware-fault theorizing
+      and NO guessing: derive the expected behavior cycle-by-cycle from the
+      references (RTL, apr.v, sim waveforms, TB) — "toggle X => state becomes
+      S1, then toggle Y => expect S2" — set that predicted timeline FIRST,
+      then diff measurement against it. Config writes only STAGE values;
+      a domain clock edge COMMITS them — verify every clocked config target
+      got its commit edge before suspecting anything else.
+    evidence: >
+      Designer doctrine (general rule, stated 2026-07-09). Case study:
+      projects/beamforming-lms-tracker-tsmc28-test/2026-07-09-weight-commit-debug-postmortem.md;
+      general note: areas/hardware-debug-method.md.
+
+  - id: mismatch-shape-triage
+    project: global
+    confidence: 0.85
+    trigger: >
+      Classifying golden-vs-received mismatches in any data-path test.
+    action: >
+      Never one "mismatch" bucket. Split exact / near-miss (small structured
+      deltas, correlated with golden) / garbage (full-scale) BEFORE counting.
+      Near-miss points at a wrong golden-model input (init state, commit
+      timing, enable gating); garbage points at protocol/path. Mixed classes
+      = two distinct problems. Also: no conclusions from underdetermined fits
+      (check equations vs unknowns before calling a residual "proof").
+    evidence: >
+      2026-07-09: lumping near-miss + garbage into one count fabricated fake
+      corruption laws and a dead probe program; splitting them solved it.
