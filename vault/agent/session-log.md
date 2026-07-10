@@ -111,3 +111,11 @@
 **Key decisions:** No re-tapeout: region-0 rotation for bit-exact tests; zero-stuffed + manual clk_update_ext ticks methodology for GSC/LMS performance (vault-noted); t2b design pends meta-corruption measurement.
 **Open:** Silicon kHz eater's physical mechanism (deep VCD analysis in progress, per-bit extraction v3); t2b meta decision; bridge forward/return bandwidth as system ceiling.
 **Connections:** [[spi-streaming-protocol]] ← [[lfsr-misr-power-fmax-test]] (region-0 erratum shapes the fmax method).
+
+## 2026-07-10
+**Worked on:** tsmc28 bench — loadline closure, chip-io validation, weight-path corruption law + software fixes (beamforming-lms-tracker-tsmc28-test)
+**What worked:** 341-loop sustained-streaming loadline (VDD_TEST 1.003 V, no droop; designer chose no trim). Probe-free chip-io 4/4 after root-causing missing scan_out pad enables (A/B diag on silicon: bare reads zeros, +enable_scan_out_pads reads seed bit-exact). Weight probe invented: wb taps + misr-bypass SCAN readback (erratum-free) + streamer-driven clk_update_ext ticks — mapped the full meta/weight corruption law (pure 1->0, per-chunk severity; chunk1 pure neighbor law 4/4 stimuli exact; chunk0 hardwired position mask; chunk2 MSB-side position-fixed + LSB flake; chunk3 nondeterministic run-erosion). Consumed-path proof: 803/803 cdot inputs == law(sent). Fixes verified on silicon: held-out prediction 100.000% bits chunks 0/1; run>=2 encoding 704/706 bit-exact.
+**What failed:** self-indexing stimulus (index bits corrupt like payload); s&~(s>>1) boolean model for chunk 3 (position/stochastic instead); unit +1 adc dies chunks 1-3 (isolated bit — but that failure re-proved the adc law and explained wb_0 sparsity).
+**Key decisions:** identification by global best-match over random 384b weights (margin-gated); ambiguous pile turned out to be chunk-3 captures — structured stimuli unlocked them. Chunk 3 declared unusable weight channel; GSC/LMS plan unaffected (scan weights).
+**Open:** wb_2 upper-meta probe + adc=3 consumed-path extension (proposed, user-gated); commits pending; chunk-2 LSB flake = only nondeterminism.
+**Connections:** [[spi-streaming-protocol]] ← [[scan-chain-architecture]] (misr-bypass scan readback as the erratum-free observation channel — same trick fixed chip-io and enabled the weight probe)
