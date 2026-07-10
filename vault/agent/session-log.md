@@ -103,3 +103,11 @@
 **Key decisions:** Retired bogus fault maps (chip #1/#2 SPI verdicts, FMC→DB condemnation); consolidated debug arc into [[chip-io-bringup-results]] + [[rstn-spi-d28-remap]], deleted spi-pads-debug-status.md, rewrote working-context to current state.
 **Open:** mosi verification; deterministic LFSR/MISR golden mismatch on chip 3 (design-test); uncommitted bench code held per user.
 **Connections:** [[rstn-spi-d28-remap]] ← [[chip-io-bringup-results]] one dead trace invalidated every downstream SPI diagnosis
+
+## 2026-07-09/10
+**Worked on:** tsmc28 SPI streaming campaign: test-1 closure, corruption root-cause, fmax, t2a.
+**What worked:** Designer's debug doctrine (chip-never-wrong, predict-first from RTL/apr.v/TB, transcribe-don't-invent). Selector-weight readback (cdot as byte echo) turned inference into measurement. Region-0 rotation closed test 1 at 1420/1420 bit-exact on errata silicon. Mixed-speed fills (slow readback fill after tx_ready) got fmax past the bridge's 1 MHz return-path ceiling: bench-chain fmax @1.0 V = 3.5 MHz. Three-stage archive diff (rtl/post-syn/post-apr) pinned the corruption to APR; PT signoff shows exactly one violation: clk_gate_read_serializer_data_r_reg/E setup -11 ps.
+**What failed:** Five of my mechanism theories (wire warm-up, weight drift, held-through-fill disturb, runt capture, MISR-invariance fmax — killed by the 0.5% nondeterministic bit floor). Bus-grouped vars in the flat gate-level VCD are phantoms (all-zero/x shadows) — per-bit scalar nets required.
+**Key decisions:** No re-tapeout: region-0 rotation for bit-exact tests; zero-stuffed + manual clk_update_ext ticks methodology for GSC/LMS performance (vault-noted); t2b design pends meta-corruption measurement.
+**Open:** Silicon kHz eater's physical mechanism (deep VCD analysis in progress, per-bit extraction v3); t2b meta decision; bridge forward/return bandwidth as system ceiling.
+**Connections:** [[spi-streaming-protocol]] ← [[lfsr-misr-power-fmax-test]] (region-0 erratum shapes the fmax method).
