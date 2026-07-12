@@ -119,3 +119,12 @@
 **Key decisions:** identification by global best-match over random 384b weights (margin-gated); ambiguous pile turned out to be chunk-3 captures — structured stimuli unlocked them. Chunk 3 declared unusable weight channel; GSC/LMS plan unaffected (scan weights).
 **Open:** wb_2 upper-meta probe + adc=3 consumed-path extension (proposed, user-gated); commits pending; chunk-2 LSB flake = only nondeterminism.
 **Connections:** [[spi-streaming-protocol]] ← [[scan-chain-architecture]] (misr-bypass scan readback as the erratum-free observation channel — same trick fixed chip-io and enabled the weight probe)
+
+## 2026-07-11
+**Worked on:** tsmc28 LFSR power characterization + GSC clk_update debug ladder (beamforming-lms-tracker-tsmc28-test)
+**What worked:** test_lfsr.py power mode (tuned-rail LFSR runs, kill-safe); bitbang->sync_div->syn_ro staircase in check_clk_update.py; wb_1 read via misr_bypass + parked ext-clock scans (free-running freeze reads zero — must park deterministically)
+**What failed:** misr-bypass read under free-running syn_ro (bus zero between handshakes); pkill -f matched tmux wrapper (killed session hard — kill python pid only); sc_lfsr_done scan reads spurious vs live 2 GHz clock
+**Key decisions:** stop_code=0 for infinite LFSR (unreachable from nonzero seed); Keithley = tied-rail convergence criterion (powercard +44..83 mV load-dependent probe offset); skew guard 50 mV warn / 100 mV abort
+**Results:** GSC weight-update ceiling 941-1054 MHz @1.0 V; full-compute @941 MHz = 50.6/179.9 mA (~230 mW); LFSR-only @2.09 GHz = 5.6/78.7 mA; designer: matches PT report
+**Open:** 1054-1388 MHz readout wedge; VDD_TEST lockstep +83 mV under load
+**Connections:** [[lfsr-misr-power-fmax-test]] ← [[clk-update-counter-stop-latch-bringup]] (load_buf-on-internal-clock class of bugs guided the debug)
