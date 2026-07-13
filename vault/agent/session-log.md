@@ -128,3 +128,11 @@
 **Results:** GSC weight-update ceiling 941-1054 MHz @1.0 V; full-compute @941 MHz = 50.6/179.9 mA (~230 mW); LFSR-only @2.09 GHz = 5.6/78.7 mA; designer: matches PT report
 **Open:** 1054-1388 MHz readout wedge; VDD_TEST lockstep +83 mV under load
 **Connections:** [[lfsr-misr-power-fmax-test]] ← [[clk-update-counter-stop-latch-bringup]] (load_buf-on-internal-clock class of bugs guided the debug)
+
+## 2026-07-12
+**Worked on:** Rebuilt gsc_and_lms_track test family (run_py_sim + generate_test_data + plot CLI) on psylab_comm; full test001 run + chip vector generation.
+**What worked:** Per-sample loop parity carried over cleanly (counters −1, phi-after-sample, noise-in-stream/gain0); scan-init vectors bit-exact vs as-taped-out case_3; 12.9k samp/s → 181 s full sim; npz+downcast cache 101 MB.
+**What failed:** `from psylab_test_infra.utils import ...` breaks on macOS (package __init__ imports smbus2) — file-path import of logging_utils instead. code-explore agent type unavailable this session (code-context.md still pending).
+**Key decisions:** py_sim npz cache is THE golden (no golden_*.txt); single-file case registry `test<NNN>` + params.json dump; Makevar as-built sizes pinned in TestVars defaults; PI-ctrl/scale-shift vectors skipped.
+**Open:** run_test/verify_test stubs; user review of test001 plots; chip-side bb_data demod scaling to confirm at verify_test.
+**Connections:** [[gsc-lms-track-test-family]] ← [[gsc-lms-track-datapath]] (as-built widths drove params)
