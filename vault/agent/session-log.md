@@ -144,3 +144,11 @@
 **Key decisions:** Zero-fill policy tightened: any load_init consumer not explicitly user-authorized as zero must be raised, not assumed inactive. Scan misr-bypass kept as readback channel (user-approved; MISO region-0 deferred to 2.3M-scale runs). Chip-native BER reported as Q-model estimate from measured instant EVM (1.4e-2) with transport-limit caveat rather than pretending sequence alignment worked.
 **Open:** bit-exact bb/PSF model (corr 0.55 — structure wrong somewhere); preamble-embedded test vectors for absolute symbol sync; full 2.3M-sample run; MISO region-0 mass readback for wb_0 at scale.
 **Connections:** [[gsc-lms-track-test-family]] <- [[spi-streaming-protocol]] (wb handoff gap = same serializer enable-gap as wb_1 chunk-3 law)
+
+## 2026-07-18
+**Worked on:** beamforming-lms-tracker-tsmc28-test — alpha sweep validation + silicon re-run (test002)
+**What worked:** Quantized-rx replication proved sim==chip (chip EVM 21.5% inside sim phase band 20.4-28.6%); 54-combo full-2.3M alpha sweep found aw 2^-15 optimum (BER 3.9x); per-case scan-shift override (load_init.opt_int) let test002 reuse test001 vectors byte-identical; full 2.3M silicon pass clean (0 rx_req failures, capture counts == test001).
+**What failed:** opt_int first assumed Path, crashed on VectorDir (fixed: VectorDir.__truediv__ returns Path). Sym-run-middle EVM selector broke on test002 — chip decim phase landed low-energy this restart, 100% inner decisions; selector picks off-phase instants. Use per-word phase-locked selection cross-run.
+**Key decisions:** Chosen setting at=2^-4/aw=2^-15 (robustness over absolute-BER winner 2^-3); wb_3 declared transport-limited for alpha comparison — wb_0/wb_1 SINR pass is the silicon observable.
+**Open:** wb_0/wb_1 pass at new alphas to show SINR gain on silicon (not yet requested).
+**Connections:** [[2026-07-17-alpha-sweep-optimum]] ← [[gsc-lms-track-test-family]] (transport ISI floor masks dense-domain gains)
