@@ -73,3 +73,42 @@ step-1 ring + audit sample only.
 - BER rows < 1e-5 rest on < 50 error events; judge by neighbor consistency.
 
 Related: [[gsc-lms-track-datapath]], [[2026-07-19-update-period-scaling-campaign]]
+
+## v2 recipe: from-scratch parameter search on a NEW signal condition (2026-07-20)
+
+Validated on test002 (~2,600 exact-BER runs). Stages, cheapest first:
+
+**Stage 0 — analytic walls (no sim, one numpy pass over the trajectory):**
+1. bins_per_sample(t) = |phi_dot(t)|·dt/phi_inc. Get v_peak_bins.
+2. Silicon walls: T_search = 0.5·B/v_peak_bins (B = 4, lms_track.sv:80,
+   50% transient margin); T_wrap = 7/v_peak_bins (4-bit ind_dot); accel
+   bound sqrt(2·budget/(phi_ddot·tau^2)), tau = 4.75·R·T.
+3. SNR wall: gb_opt from misadjustment (anchors: 0.012 @ 6 dB, 0.1-0.2 @
+   40 dB; 1-D probe if between). ref_max = budget_bins·gb/(1-gb),
+   budget = 0.35 deg/phi_inc.
+4. Ceiling curve: saving(ref) = 1 - E[T_base/clip(ref/bins_per_sample,
+   T_min, T_max)]. If ceiling at ref_max is not worth it, STOP (feature
+   off for this condition).
+5. R from staleness: largest power-of-2 R with 4.75·R·T_max < 3% of the
+   trajectory quarter-period (bigger R = cleaner velocity; ma13 fixed).
+
+**Stage 1 — calibration (3 short runs):** baseline metrics + codebook pick
+histogram (confirms gamma*P scale) + vel_meas_corr (chain sanity).
+
+**Stage 2 — coarse (10-20 full runs):** ref ladder around 60-80% of
+ref_max x gb {anchor/1.5, anchor, anchor·1.5}. Fixed: kp = 6.0,
+ki = kp·1.6e-4 (reference-validated ratio), clamps +pm/-4·pm with pm from
+slew: reach T_max within a quarter of the envelope timescale.
+
+**Stage 3 — fine (20-40 runs):** ref step 4 codes, gb step ~0.002, kp
+{6,7,8}, ki {1..16} joint at the winner. Expect a flat plateau; pm/pn/smax
+usually inert when the equilibrium is interior.
+
+**Stage 4 — MANDATORY validation:** >= 3 seeds on top-3 (test002 lesson:
+4-of-4 single-seed sub-baseline BER wins were flukes; savings are the
+robust statistic, PI savings deterministic, step-mode savings fragile).
+Trace plot with measured-velocity overlay; ceiling-efficiency check
+(measured/ideal >= 70%, else controller problem, not parameters).
+
+Encode-ready for find_t_ctrl_params.py (stages 0-1 already there; walls
+2-3 and the seed rule are the v2 additions).
