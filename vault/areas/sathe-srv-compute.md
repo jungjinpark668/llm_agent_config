@@ -15,6 +15,10 @@ single-core job fleet. Vivado-specific usage lives in [[fpga-bridge-compile]].
 
 - `sathe-srv1.ece.gatech.edu` / `sathe-srv2.ece.gatech.edu`, user `jpark3066`
   (ssh config has aliases; srv2 uses `~/.ssh/id_sathe_srv2`).
+- **USER RULE (2026-07-22): compute jobs run on srv1 ONLY. Never launch on
+  srv2 without the user explicitly naming srv2 — server choice is the
+  user's, even when srv1 is loaded and srv2 looks free.** Also cap
+  concurrent sims at the user-stated pool (16 as of this writing).
 - Both: 128 cores, RHEL 8.10. srv1 was idle (load 0.3), srv2 lightly used.
   RAM not measured. Every ssh prints a 14-line GT banner — filter it when
   parsing remote output (`grep -v` on banner phrases).
