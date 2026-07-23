@@ -20,7 +20,7 @@
 **What failed:** Root cause of the flat ~640 Hz was a physical probe connection (user fixed it), NOT instrument mode or chip — wasted a coarse/fine sweep + a divider ladder on floor data before catching it. Lesson: monotonic fine-tracking is NOT proof of real signal (aliased beats track too); only cross-divider agreement is. First sweep used div 13/14 — too low, floored the fast corner; needed 14/15.
 **Key decisions:** Verify scan health (scan_init_test --power) before each campaign; never touch PSU on a live board (--skip-power always); run in tmux (RPi link drops constantly).
 **Open:** exact 1 GHz needs a VDD_RO trim (not done — touches power); coarse0/fine0 RO >19.6 GHz unmeasurable with DMM; characterization only at 1.0 V (no voltage sweep yet); an adaptive per-config divider would replace the two-run workaround.
-**Connections:** [[ro-usage-guide]] ← [[2026-06-14-ro-full-characterization]] (usage recipes built on the characterization data); closes the "clk_main_div_o measurement instrument" open item from [[silicon-functional-test-recipe]] (34410A works within 3 Hz-300 kHz via the divider).
+**Connections:** [[ro-usage-guide]] ← [[ro-full-characterization]] (usage recipes built on the characterization data); closes the "clk_main_div_o measurement instrument" open item from [[silicon-functional-test-recipe]] (34410A works within 3 Hz-300 kHz via the divider).
 
 ## 2026-06-15
 **Worked on:** DSU scan-bypass memory verification — `scratch/dsu_mem_scan_test.py`, written then run on silicon (RPi bench).
@@ -151,7 +151,7 @@
 **What failed:** opt_int first assumed Path, crashed on VectorDir (fixed: VectorDir.__truediv__ returns Path). Sym-run-middle EVM selector broke on test002 — chip decim phase landed low-energy this restart, 100% inner decisions; selector picks off-phase instants. Use per-word phase-locked selection cross-run.
 **Key decisions:** Chosen setting at=2^-4/aw=2^-15 (robustness over absolute-BER winner 2^-3); wb_3 declared transport-limited for alpha comparison — wb_0/wb_1 SINR pass is the silicon observable.
 **Open:** wb_0/wb_1 pass at new alphas to show SINR gain on silicon (not yet requested).
-**Connections:** [[2026-07-17-alpha-sweep-optimum]] ← [[gsc-lms-track-test-family]] (transport ISI floor masks dense-domain gains)
+**Connections:** [[alpha-sweep-optimum]] ← [[gsc-lms-track-test-family]] (transport ISI floor masks dense-domain gains)
 
 ## 2026-07-19
 **Worked on:** Update-period scaling campaign (beamforming-lms-tracker-tsmc28-test): quantized velocity chain + controllers, ~2,600 full-run sweep with exact BER, methodology driver.
@@ -159,4 +159,4 @@
 **What failed:** Proxy metrics (phi RMS/SINR) misordered the BER knee twice (step D 5.4x surprise, PI 0.13x surprise) -- exact BER is mandatory near the front. Coarse PI grid missed ki=0 entirely.
 **Key decisions:** R=128 + ma13 velocity chain (raw-lag argument); two-stage search with boundary-expansion rule (triggered once, 8 combos, all worse); stop_max sweep skipped after data showed cap never binds on this trajectory.
 **Open:** Operating-point pick (user), test003 + chip vectors, variable-tick chip streaming mechanics.
-**Connections:** [[adaptive-update-period-param-search]] <- [[2026-07-19-update-period-scaling-campaign]] (methodology distilled from campaign)
+**Connections:** [[adaptive-update-period-param-search]] <- [[update-period-scaling-campaign]] (methodology distilled from campaign)
