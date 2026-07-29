@@ -75,6 +75,12 @@ replacement limit. Result rows carry a `host` field for provenance.
   Mac/ARM and srv1/x86 (BLAS reduction order feeds the adaptive loop, which
   amplifies LSB diffs; observed ~1% EVM shift on an identical combo). Keep
   any ranking/grid single-platform; the `host` row field tracks provenance.
+- **BLAS thread pinning is NOT server-only.** The server REMOTE_ENV pins
+  OMP/MKL/OPENBLAS/NUMEXPR/VECLIB_NUM_THREADS=1; running `run_job_pool.py`
+  LOCALLY on the Mac without the same env let each numpy sim spawn many BLAS
+  threads → 14 sims drove load to 95+ (near hang). Always prefix local pools
+  with the same `OMP_NUM_THREADS=1 ...` env. Verify: 1 core per sim ≈ 100%
+  CPU each; if python CPU >> pool×100%, threads aren't pinned.
 - Monitor remote fleets with ssh until-loops on the tmux session/log
   (per server-task rules), not sleep-polling; watchers wake on
   `+N [job` lines or `rc=[1-9]`.
