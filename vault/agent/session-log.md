@@ -151,7 +151,7 @@
 **What failed:** opt_int first assumed Path, crashed on VectorDir (fixed: VectorDir.__truediv__ returns Path). Sym-run-middle EVM selector broke on test002 — chip decim phase landed low-energy this restart, 100% inner decisions; selector picks off-phase instants. Use per-word phase-locked selection cross-run.
 **Key decisions:** Chosen setting at=2^-4/aw=2^-15 (robustness over absolute-BER winner 2^-3); wb_3 declared transport-limited for alpha comparison — wb_0/wb_1 SINR pass is the silicon observable.
 **Open:** wb_0/wb_1 pass at new alphas to show SINR gain on silicon (not yet requested).
-**Connections:** [[alpha-sweep-optimum]] ← [[gsc-lms-track-test-family]] (transport ISI floor masks dense-domain gains)
+**Connections:** [[alpha-vs-beam-frequency-campaign]] ← [[gsc-lms-track-test-family]] (transport ISI floor masks dense-domain gains)
 
 ## 2026-07-19
 **Worked on:** Update-period scaling campaign (beamforming-lms-tracker-tsmc28-test): quantized velocity chain + controllers, ~2,600 full-run sweep with exact BER, methodology driver.
@@ -159,4 +159,4 @@
 **What failed:** Proxy metrics (phi RMS/SINR) misordered the BER knee twice (step D 5.4x surprise, PI 0.13x surprise) -- exact BER is mandatory near the front. Coarse PI grid missed ki=0 entirely.
 **Key decisions:** R=128 + ma13 velocity chain (raw-lag argument); two-stage search with boundary-expansion rule (triggered once, 8 combos, all worse); stop_max sweep skipped after data showed cap never binds on this trajectory.
 **Open:** Operating-point pick (user), test003 + chip vectors, variable-tick chip streaming mechanics.
-**Connections:** [[adaptive-update-period-param-search]] <- [[update-period-scaling-campaign]] (methodology distilled from campaign)
+**Connections:** [[adaptive-update-period-param-search]] <- [[interferer-adaptive-saving]] (methodology distilled from campaign)
