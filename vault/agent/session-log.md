@@ -160,3 +160,11 @@
 **Key decisions:** R=128 + ma13 velocity chain (raw-lag argument); two-stage search with boundary-expansion rule (triggered once, 8 combos, all worse); stop_max sweep skipped after data showed cap never binds on this trajectory.
 **Open:** Operating-point pick (user), test003 + chip vectors, variable-tick chip streaming mechanics.
 **Connections:** [[adaptive-update-period-param-search]] <- [[interferer-adaptive-saving]] (methodology distilled from campaign)
+
+## 2026-08-27
+**Worked on:** ISSCC figure campaign (beamforming-lms-tracker-tsmc28-test): SINR-only DoA-sweep-freq + total-ISR figures, 3 alpha_track lines + analytic MVDR Optimum bound; ISR/EbN0 alpha-optimum studies.
+**What worked:** Reusing cached grid rows cut new sims to fills; tot_* total-ISR ladder (pattern-preserving offset) slotted into ISR_LEVELS without breaking any consumer (reference figure byte-identical); MVDR bound via local R_in^-1 a0 + existing get_sinr_db; --ebn0 override writing to separate results_ebn0.jsonl avoided selector contamination; SSH-failure-tolerant monitors (5-fail threshold) after a VPN drop caused a false "session ended".
+**What failed:** at=2^-1 at f2-full diverged and crashed metrics (empty-array bypasses isfinite guard) — error row, no measurement; 2^-9 slow line proved broken across the whole plotted range (user's slow-good-at-low-f expectation instead realized by 2^-7); sync-hook pull silently skipped results_ebn0.jsonl (filename-keyed merge) until extended.
+**Key decisions:** Fig A lines 2^-1/2^-5/2^-7 (2^-7 recommended over requested 2^-9 after candidate sweep); Fig B lines 2^0/2^-4/2^-8 around the ISR_total=+3dB optimum 2^-4; Optimum line = max-SINR MVDR (not LCMV gen_ideal_weights, which is ISR-flat by exact nulls and has a dB-convention bug).
+**Open:** Fig A slow-line choice pending user confirmation (2^-7 vs 2^-6); psylab_comm 0.05-vs-0.1 dB fix; point-runner empty-array divergence guard; SINR_in (Eb/N0-axis) figure deferred.
+**Connections:** [[2026-08-26-alpha-track-operating-region-study]] ← [[interferer-adaptive-saving]] (both characterize the tracking-loop operating envelope for the paper).
