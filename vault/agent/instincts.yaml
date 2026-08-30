@@ -96,3 +96,23 @@ instincts:
       additionally an unnecessary scan-bit override was generalized from the
       sync-div flow comment that the baseline never needed. Cost: one wasted
       bench cycle; stock flow + offset 7 tracked immediately.
+
+  - id: zero-stuffed-times4-period-law
+    project: beamforming-lms-tracker-tsmc28-test
+    confidence: 0.9
+    trigger: >
+      Any chip run configuring an update/period/counter value while using
+      zero-stuffed (chunk-0-only) SPI transport.
+    action: >
+      Chip counters count CHIP samples; zero-stuffed transport makes 1 real
+      sample = 4 chip samples. EVERY period-valued chip setting = 4x the
+      python real-sample period (counter_stop = 4T-1). Host frame-anchored
+      ticks stay in REAL-sample units (tick_every_frames = T). Stage
+      clk_update_counter_stop_init.txt explicitly; the absent-file default
+      (49) is silent and wrong for any T != 50. UNIVERSAL law: chip period = 4*T chip samples in every mode. Sync-div: divider realizes it (counter_stop=4T-1 sets the pulse). External-tick: host frame spacing IS the period and pulse timing is purely the host edge schedule; still stage counter_stop=4T-1 for on-chip period consumers.
+    evidence: >
+      2026-08-30 GTRI runs: user stated the x4/chunk-0 fact three times before
+      it was applied; the law existed only in chip_adaptive_run.py's comment
+      ("T-1 vs 4T-1"). Silicon readback showed counter_stop=49 while host
+      ticked T=2; tracking ran at ~1/5 the model rate with doubled direction
+      reversals until counter files were staged.
