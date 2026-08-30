@@ -73,3 +73,26 @@ instincts:
       User directive 2026-07-09 ("keep updating chip behavior context...
       keep adding the note what you found; no care about length I only care
       whether note is correct or not").
+
+  - id: calibrated-params-from-primary-note-before-bench
+    project: beamforming-lms-tracker-tsmc28-test
+    confidence: 0.9
+    trigger: >
+      Any bench/hardware launch whose flow has parameters ever described as
+      "calibrated", "pinned", or "swept", or that the plan lists as a risk.
+    action: >
+      Before the FIRST launch: resolve every such parameter's value from the
+      primary vault note / campaign log that calibrated it, read line by
+      line personally (sub-agent summaries are leads, not evidence). Never
+      launch on CLI defaults for such parameters. Close plan risk items
+      (look the value up or run the cheap control) before launch, not after
+      failure. Never transfer config conclusions between flows/clocking
+      regimes without direct evidence in the target flow.
+    evidence: >
+      2026-08-30 GTRI chip run: first 6-pass launch frozen (a_ind/w static)
+      because tick_edge_offset=1 CLI default was used although
+      gsc-lms-track-test-family.md documents "offset 0/1 = updates land on
+      zero samples -> frozen" and the 200k/2.3M methodology used offset 7;
+      additionally an unnecessary scan-bit override was generalized from the
+      sync-div flow comment that the baseline never needed. Cost: one wasted
+      bench cycle; stock flow + offset 7 tracked immediately.
