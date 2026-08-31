@@ -2,7 +2,6 @@
   "env": {
     "DISABLE_AUTOUPDATER": "1",
     "ENABLE_TOOL_SEARCH": "true",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "40",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "256000"
   },
   "attribution": {
@@ -21,7 +20,6 @@
       "~/llm_agent_config/vault"
     ]
   },
-  "model": "claude-fable-5[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -166,8 +164,10 @@
     }
   },
   "effortLevel": "xhigh",
+  "autoCompactWindow": 100000,
   "tui": "fullscreen",
   "autoMemoryEnabled": false,
+  "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
