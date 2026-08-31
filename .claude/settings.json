@@ -164,10 +164,10 @@
     }
   },
   "effortLevel": "xhigh",
-  "autoCompactWindow": 100000,
   "tui": "fullscreen",
   "autoMemoryEnabled": false,
   "autoCompactEnabled": true,
+  "autoCompactWindow": 450000,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
