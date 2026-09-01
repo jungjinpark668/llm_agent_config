@@ -6,10 +6,14 @@ At session start, the hook provides only project name + checkpoint headers (~8 l
 ## Vault Search
 For vault queries in main context, prefer spawning a subagent to keep context clean. Within subagents, use **mgrep** for semantic search or **Grep** for exact matches. Direct vault reads in main context are acceptable only for single known-path files.
 
-## When to Write Notes (Quality Bar)
-Write to the vault only when a future Claude instance would genuinely benefit. Ask: "Would this save significant time or prevent re-discovery in a future session?"
+## Authoring Gate + Quality Bar
+**Authoring gate (hard rule).** Never create or edit a vault note unless the user explicitly says to write or update the note. Reading, searching, and user-requested checkpoints are fine; autonomous note-writing is not. When you think a note would help, SUGGEST it and let the user decide — do not write it yourself.
 
-**Write a note when:**
+**When the user does ask you to write a note:** ignore length. Optimize only for a dead-simple, concise, unambiguous tone the user can re-read and instantly regain context. Detail bar: a fresh agent with zero prior context must gain the full background from the note alone — define every term and number, cite the source of truth (RTL / code / data / user). Accuracy and completeness are the only quality targets; no filler, no hedging, no narrative padding.
+
+The heuristics below describe when a note is worth SUGGESTING, not when to self-write.
+
+**Suggest a note when:**
 - A non-obvious solution was found (capture the reasoning, not just the fix)
 - A meaningful connection between ideas surfaces
 - The user explicitly asks to remember something
@@ -50,6 +54,13 @@ Files that exist solely for Claude's internal use (session logs, snapshots, conn
 - **Target**: 200-400 lines per note
 - **Maximum**: 800 lines — split if larger
 - **Minimum useful**: 10 lines — if shorter, consider appending to an existing note instead
+
+## Note Structure — Truth First, History Last
+**Truth-first body (rule).** A note's body, from the first line down, states ONLY what is currently true. No history, dead ends, or superseded content interleaved in the body.
+
+**Trailing history (rule).** Every note ends with a `## History` section as its LAST section — the only place superseded, mistaken, or dead-end content may appear. Reading top-to-bottom gives current truth first, history last. Omit the section until there is history to record.
+
+**Belief-change protocol (rule).** When something previously recorded as correct changes or is found wrong: MOVE the original wording DOWN into that note's `## History` with a dated line stating why it was wrong / what changed, then leave only the corrected truth in the body above. The body never shows the scar; the trailing `## History` is the audit trail. Never silently overwrite — the "why it changed" must survive in History.
 
 ## Wikilinks (REQUIRED)
 Every note MUST contain at least one `[[wikilink]]` to a related note. Orphaned notes are invisible to the graph and to future retrieval.

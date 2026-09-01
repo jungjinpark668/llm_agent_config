@@ -75,6 +75,8 @@ Both hooks resolve the current project from the CWD through `hooks/lib/detect-pr
 
 ## Note Quality Gate
 
+**Authoring gate (hard rule):** never create or edit a vault note unless the user explicitly says to write it — suggest, don't self-write. When asked, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `.claude/rules/obsidian-notes.md`.
+
 Before writing ANY note to the vault, verify:
 1. **Future value** — Would a future Claude instance genuinely benefit? (not just "nice to have")
 2. **No duplication** — Is this already in the codebase, git history, or existing notes?
