@@ -1,0 +1,7 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+DISABLE_AUTOUPDATER = "1"
+ENABLE_TOOL_SEARCH = "true"
+CLAUDE_CODE_MAX_OUTPUT_TOKENS = "256000"

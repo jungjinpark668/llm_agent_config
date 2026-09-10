@@ -1,0 +1,111 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/parkjungjin/llm_agent_config/.codex/hooks/block-destructive.sh'",
+            "statusMessage": "Checking for destructive commands..."
+          },
+          {
+            "type": "command",
+            "command": "'/Users/parkjungjin/llm_agent_config/.codex/hooks/protect-main.sh'",
+            "statusMessage": "Checking branch protection..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/protect-files.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for protected files..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/validate-vault-write.sh",
+            "timeout": 5,
+            "statusMessage": "Validating vault write..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/detect-stale-notes.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for stale vault notes..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/update-timeline.sh",
+            "timeout": 5,
+            "statusMessage": "Updating timeline..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/auto-format-py.sh",
+            "timeout": 10,
+            "statusMessage": "Auto-formatting Python..."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/pre-compact.sh",
+            "timeout": 10,
+            "statusMessage": "Checking vault state before compression..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/session-start.sh",
+            "timeout": 10,
+            "statusMessage": "Loading vault context..."
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/session-stop.sh",
+            "timeout": 5,
+            "statusMessage": "Session end check..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/llm_agent_config/hooks/user-prompt-submit.sh",
+            "timeout": 5,
+            "statusMessage": "Matching project notes..."
+          }
+        ]
+      }
+    ]
+  }
+}
