@@ -164,10 +164,15 @@
     }
   },
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  },
+  "autoCompactWindow": 450000,
   "tui": "fullscreen",
   "autoMemoryEnabled": false,
   "autoCompactEnabled": true,
-  "autoCompactWindow": 450000,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
