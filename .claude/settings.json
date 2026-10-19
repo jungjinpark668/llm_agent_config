@@ -11,7 +11,7 @@
   "permissions": {
     "allow": [
       "Read(~/llm_agent_config/vault/**)",
-      "Write(~/llm_agent_config/vault/**)",
+      "Edit(~/llm_agent_config/vault/**)",
       "Read(~/.claude)",
       "Read(//tmp/**)"
     ],
