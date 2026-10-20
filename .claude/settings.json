@@ -13,7 +13,8 @@
       "Read(~/llm_agent_config/vault/**)",
       "Edit(~/llm_agent_config/vault/**)",
       "Read(~/.claude)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "mcp__sequential-thinking__sequentialthinking"
     ],
     "defaultMode": "auto",
     "additionalDirectories": [
