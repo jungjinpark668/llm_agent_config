@@ -178,5 +178,6 @@
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
     "~/llm_agent_config/vault"
-  ]
+  ],
+  "model": "opus"
 }
