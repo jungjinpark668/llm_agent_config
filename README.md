@@ -366,7 +366,7 @@ These run without you doing anything — triggered by hooks in `settings.json`.
 | **Claude writes/edits a vault `.md` file** | `detect-stale-notes.sh` | Warns if a config file changed but vault docs weren't updated |
 | **Claude writes `working-context.md`** | `update-timeline.sh` | Appends a checkpoint summary to `timeline.md` — a permanent append-only history |
 | **Every 5 minutes** (cron) | `server-sync.sh` | Auto-commits vault changes and pushes to GitHub |
-| **Every Monday 10am LA** (remote) | `weekly-vault-audit` | Clones repo from GitHub, runs 14-point audit + vault summary, emails report to Gmail under `Claude/Obsidian_audit`, stamps `vault/.last-audit` and pushes |
+| **Every Monday 18:00 UTC** (cloud; 10am LA in winter, 11am in summer) | `Weekly vault audit + golden-note sync` | Clones repo from GitHub, runs audit checks 2-14 (report only) + golden-note sync against `my-note/`, writes `vault/agent/audits/YYYY-MM-DD-vault-audit.md`, stamps `vault/.last-audit` and pushes to main |
 | **Claude needs your attention** | `terminal-notifier` | macOS notification popup |
 
 ### When to use each skill
@@ -454,7 +454,7 @@ Next session start (any project)
 
 **Two layers of automation:**
 
-The audit has both a local reminder and a remote scheduled agent:
+The audit has a local reminder and a weekly cloud run:
 
 ```
 Layer 1 — Local reminder (session-start.sh):
@@ -462,47 +462,38 @@ Layer 1 — Local reminder (session-start.sh):
   Pros: checks everything (cron, symlinks, sync.log)
   Cons: only fires when you open Claude Code
 
-Layer 2 — Remote scheduled agent (weekly-vault-audit):
-  Every Monday 10am LA time → clones repo from GitHub → runs audit + vault summary → emails report
+Layer 2 — Cloud scheduled task ("Weekly vault audit + golden-note sync"):
+  Every Monday 18:00 UTC (10:00 LA in winter, 11:00 LA in summer)
+  → clones the repo from GitHub → runs checks 2-14 + golden-note sync
+  → writes vault/agent/audits/YYYY-MM-DD-vault-audit.md → stamps vault/.last-audit → pushes to main
   Pros: runs even if you don't open Claude Code that week
-  Cons: can't check local-only things (cron status, symlinks, sync.log)
+  Cons: can't see local-only things (cron status, symlinks, sync.log), so check 1 is N/A
 ```
 
-Together they cover each other's gaps: the remote agent runs reliably on schedule and emails you, while the local reminder catches things the remote agent can't see.
+The two layers cover each other's gaps: the cloud run happens on schedule, and the local reminder catches what the cloud run can't see.
 
-**Remote agent setup (via `/schedule`):**
+**What the cloud run changes:**
+- Checks 2-14 only report. Problems go under Action Items in the report. Nothing is renamed or deleted.
+- Golden-note sync fixes agent notes that disagree with `my-note/`. The old wording moves to the note's `## History`.
+- It never writes `my-note/`. The repo hooks don't run in the cloud (they point at `~/llm_agent_config`), so before committing the run checks `git status` and undoes any change inside `my-note/` or outside `vault/`.
+- If the push to main fails twice, it pushes to a `claude/vault-audit-YYYY-MM-DD` branch instead.
 
-The remote agent is a Claude Code session running in Anthropic's cloud. It clones the `llm_agent_config` repo from GitHub (kept fresh by the 5-minute cron sync), runs the audit, and emails the results.
-
-To set it up from scratch:
-
-```bash
-# In any Claude Code session, type:
-/schedule
-# Then: "Create a weekly scheduled agent that runs obsidian-audit
-#        every Monday 10am, emails results to <your-email>,
-#        labels under Claude/Obsidian_audit"
-```
+Your Mac gets the pushed report at its next auto-commit: `hooks/server-sync.sh` pulls when its own push is rejected.
 
 Requirements:
-- The `llm_agent_config` repo must be on GitHub (for the remote agent to clone)
-- Gmail MCP connector must be connected at https://claude.ai/settings/connectors
-- Create a Gmail label `Claude/Obsidian_audit` (Settings → Labels → Create new label)
+- GitHub connected to your Claude account (`/web-setup` or https://claude.ai/connect-github)
+- The repo on GitHub, kept fresh by the 5-minute cron sync
 
-The remote agent sends an email with two parts:
-1. **Audit scorecard** — 14-point health check (PASS/WARN/FAIL per check, action items)
-2. **Weekly vault summary** — reads every project note, summarizes each in 3-5 bullets, lists this week's checkpoints, current goals, open items, session log entries, and inbox status
+**To recreate it:** type `/schedule` and ask for a weekly cloud task on `jungjinpark668/llm_agent_config` that runs the obsidian-audit skill with golden-note sync and writes its report to `vault/agent/audits/`. The full prompt of the current task is visible at the link below.
 
-After the audit, the agent stamps `vault/.last-audit` and pushes, so the local session-start reminder also resets.
-
-Current trigger: `trig_01KfVHTvWpeZfYrh3vVo1xvq`
-Manage at: https://claude.ai/code/scheduled
+Current task: `trig_019cbJbCKoJJ1SWqMCrmLxA1`
+Manage at: https://claude.ai/code/routines/trig_019cbJbCKoJJ1SWqMCrmLxA1
 
 **Local reminder setup (already done by default):** The reminder is built into `hooks/session-start.sh`. No extra setup needed. If you want to change the interval from 7 days, edit the line `if [ "$DAYS_SINCE" -ge 7 ]` in the hook.
 
 **To disable the local reminder:** Remove or comment out the "Check if vault audit is overdue" block in `hooks/session-start.sh`.
 
-**To disable the remote agent:** Go to https://claude.ai/code/scheduled and disable or delete the `weekly-vault-audit` trigger.
+**To disable the cloud task:** open https://claude.ai/code/routines and turn off or delete "Weekly vault audit + golden-note sync".
 
 #### `/project-archaeology` — deep codebase documentation
 

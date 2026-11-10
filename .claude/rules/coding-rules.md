@@ -2,8 +2,6 @@
 
 Behavioral guidelines to reduce common LLM coding mistakes. These bias toward caution over speed. For trivial tasks, use judgment.
 
-Wrong-vs-right examples for rules 1-6 live in the `coding-rules-examples` skill. Load it when unsure how a rule applies, or when reviewing code against these rules.
-
 ---
 
 ## 1. Think Before Coding
@@ -145,7 +143,7 @@ def compute_average(values, weights=None):
 
 ## Key Insight
 
-The overcomplicated examples aren't obviously wrong — they follow design patterns and best practices. The problem is **timing**: they add complexity before it's needed, which makes code harder to understand, introduces more bugs, takes longer to implement, and is harder to test.
+Overcomplicated code isn't obviously wrong — it follows design patterns and best practices. The problem is **timing**: it adds complexity before it's needed, which makes code harder to understand, introduces more bugs, takes longer to implement, and is harder to test.
 
 Good code solves today's problem simply, not tomorrow's problem prematurely. Simple versions can always be refactored later when complexity is actually needed.
 
