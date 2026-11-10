@@ -16,6 +16,9 @@
       "Read(//tmp/**)",
       "mcp__sequential-thinking__sequentialthinking"
     ],
+    "ask": [
+      "Edit(~/llm_agent_config/vault/projects/*/my-note/**)"
+    ],
     "defaultMode": "auto",
     "additionalDirectories": [
       "~/llm_agent_config/vault"
