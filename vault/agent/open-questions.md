@@ -21,3 +21,7 @@ Streamed meta[437:384] verification impossible via wb_2 (state word registers
 load scan init only — RTL-proven, see [[spi-streaming-protocol]] meta-map
 CORRECTION). Future recipe lives in that note's open-side-quests list:
 clk_update_counter_stop -> sync-div period probe. User: "some day I'll check it."
+
+## 2026-11-10: weekly cloud audit cannot see project notes (decision needed)
+Fact: `.gitignore` line 20 (`**/projects/`, since commit 04c4b6e, 2026-04-30) also matches `vault/projects/`. `git ls-files vault/projects` returns 0 files, so project notes and `my-note/` exist only on the Mac. The weekly cloud routine `trig_019cbJbCKoJJ1SWqMCrmLxA1` (Mondays 18:00 UTC, first run 2026-11-16) works on a clone of the GitHub repo. Its prompt says "Run the skill's Golden-Note Sync section for every folder in `vault/projects/`", but the clone has no such folder. It can only audit `agent/`, `areas/`, `library/`, and it would still stamp `vault/.last-audit`.
+Options: (A) run the weekly audit on the Mac, where the notes are, and pause the cloud routine; project notes stay off GitHub. (B) stop ignoring `vault/projects/` so the notes are pushed and the cloud routine sees them; only if the repository is private and chip notes may be stored there. Agent's recommendation: A. Asked the user on 2026-11-10. See [[last-point-hook]] for the session where this was found.
