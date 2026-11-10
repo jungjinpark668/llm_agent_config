@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-09 22:04
-
-**CWD:** /Users/parkjungjin/PSy_lab/Beamforming/beamforming_lms_tracker_tsmc28_test
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-09 22:23
 
 **CWD:** /Users/parkjungjin/llm_agent_config/vault/agent
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-10 09:59
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-10 11:06
 
 **CWD:** /Users/parkjungjin/llm_agent_config/vault/projects/beamforming-lms-tracker-tsmc28-test
@@ -45,9 +35,19 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-10 11:07
 
 **CWD:** /Users/parkjungjin/llm_agent_config
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-10 11:12
+
+**CWD:** /Users/parkjungjin/llm_agent_config/vault/projects/beamforming-lms-tracker-tsmc28-test/bench-infra
 
 ### Git State
 
