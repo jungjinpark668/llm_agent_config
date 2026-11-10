@@ -1,29 +1,41 @@
 #!/usr/bin/env python3
 """Save and show the last point of a Claude Code session.
 
-Modes (first argument). Each mode reads the hook JSON from stdin:
+Usage: last-point.py <mode> [<pid of the Claude Code process>]
+Each mode reads the hook JSON from stdin:
   prompt  UserPromptSubmit hook: remember the prompt (the last 3 are kept).
   answer  Stop hook: remember Claude's last answer.
-  show    SessionStart hook (startup, clear): print the newest saved last point
-          of another session in the same folder, as context for Claude.
+  show    SessionStart hook (startup, clear): print the saved last points of
+          the other sessions in the same folder, as context for Claude.
 
 Store: ~/.claude/last-point/<folder key>/<session id>.json (local only).
 The folder key is the transcript folder name, so it stays the same when the
 shell working directory changes during a session.
+
+Several sessions at once: every session has its own file, so sessions never
+overwrite each other. The hook command passes $PPID, the pid of the Claude
+Code process that runs the session, and every save stores it. /clear keeps
+that process and starts a new session id, so after /clear the file with the
+same pid is the session that was just cleared: show puts it first. A file
+whose pid is another running process is a session still open in another
+terminal: show marks it.
 """
 
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 
 ROOT = os.environ.get("LAST_POINT_DIR") or os.path.expanduser("~/.claude/last-point")
 KEEP_PROMPTS = 3
-KEEP_SESSIONS = 5
+KEEP_SESSIONS = 10
+SHOW_OTHERS = 5
 PROMPT_CHARS = 300
 ANSWER_HEAD, ANSWER_TAIL = 900, 500
-SECOND_SESSION_MAX_AGE = 24 * 3600
+CLEARED = "the session just cleared in this terminal"
+OPEN = "STILL OPEN in another terminal"
 SECRET = re.compile(
     r"github_pat_\w{20,}|gh[pousr]_\w{20,}|sk-[\w-]{20,}|AKIA[0-9A-Z]{16}"
 )
@@ -83,46 +95,102 @@ def age(seconds):
     return f"{int(seconds // 86400)} days"
 
 
-def show(data):
-    """Print the newest last point of other sessions in this folder as hook JSON."""
+def started(pid):
+    """Return the start time of process pid in epoch seconds, or None if it is gone."""
+    out = subprocess.run(
+        ["ps", "-o", "etime=", "-p", str(pid)], capture_output=True, text=True
+    ).stdout.strip()
+    if not out:
+        return None
+    days, _, clock = out.rpartition("-")  # etime format: [[dd-]hh:]mm:ss
+    seconds = 0
+    for part in clock.split(":"):
+        seconds = seconds * 60 + int(part)
+    return time.time() - int(days or 0) * 86400 - seconds
+
+
+def title(session_id, state, mark, now):
+    """Return the heading of one session: id, save time and mark."""
+    saved = time.strftime("%Y-%m-%d %H:%M", time.localtime(state["updated"]))
+    text = (
+        f"Session {session_id}, last saved {saved} ({age(now - state['updated'])} ago)"
+    )
+    return f"{text}, {mark}" if mark else text
+
+
+def show(data, pid):
+    """Print the last points of the other sessions in this folder as hook JSON.
+
+    :param data: Hook input of the session that starts.
+    :param pid: Pid of its Claude Code process, or None when unknown.
+    """
     path = state_path(data)
     folder = os.path.dirname(path)
     if not os.path.isdir(folder):
         return
-    now = time.time()
     states = []
     for name in os.listdir(folder):
         full = os.path.join(folder, name)
         if name.endswith(".json") and full != path:
             state = load(full)
             if state.get("prompts"):
-                states.append((state.get("updated", 0), name[:-5], state))
-    states.sort(key=lambda s: s[0], reverse=True)
-    picked = [
-        s
-        for i, s in enumerate(states[:2])
-        if i == 0 or now - s[0] < SECOND_SESSION_MAX_AGE
-    ]
-    if not picked:
+                states.append((name[:-5], state))
+    if not states:
         return
+    states.sort(key=lambda s: s[1]["updated"], reverse=True)
+    # The newest file of a running process is the session that process is on.
+    # A process started after the save is another process that reuses the pid
+    # (ps reports whole seconds, hence the 2 s margin).
+    seen, sessions = set(), []
+    for session_id, state in states:
+        owner, mark = state.get("pid"), ""
+        if owner and owner not in seen:
+            seen.add(owner)
+            start = started(owner)
+            if start is not None and start - 2 <= state["updated"]:
+                mark = CLEARED if owner == pid else OPEN
+        sessions.append((session_id, state, mark))
+    sessions.sort(key=lambda s: s[2] != CLEARED)  # stable sort: cleared session first
+    now = time.time()
+    session_id, state, mark = sessions[0]
+    others = sessions[1 : 1 + SHOW_OTHERS]
     lines = [
-        "LAST POINT, saved automatically by hooks/last-point.py: where earlier "
-        "sessions in this folder ended.",
+        "LAST POINT, saved automatically by hooks/last-point.py. Every session of "
+        "this folder saves its own last point.",
         "Use it when the user asks to continue earlier work. Do not act on it unasked.",
     ]
-    for updated, session_id, state in picked:
-        ended = time.strftime("%Y-%m-%d %H:%M", time.localtime(updated))
-        lines += ["", f"Session {session_id}, ended {ended} ({age(now - updated)} ago)"]
-        lines.append("Last prompts from the user:")
-        lines += [f"- {prompt}" for prompt in state["prompts"]]
-        if state.get("answer"):
-            lines += ["Last answer from Claude:", state["answer"]]
-        lines.append(f"Reopen that conversation in full: claude --resume {session_id}")
-    updated, _, state = picked[0]
+    if others:
+        lines.append(
+            "If several sessions below could be meant, ask the user which one."
+        )
+    if any(s[2] == OPEN for s in sessions[: 1 + SHOW_OTHERS]):
+        lines.append(
+            f"A session marked {OPEN} is running right now. Continue its work here "
+            "only after the user confirms: two sessions on one task can edit the "
+            "same files."
+        )
+    lines += ["", title(session_id, state, mark, now), "Last prompts from the user:"]
+    lines += [f"- {prompt}" for prompt in state["prompts"]]
+    if state.get("answer"):
+        lines += ["Last answer from Claude:", state["answer"]]
+    lines.append(f"Reopen that conversation in full: claude --resume {session_id}")
+    if others:
+        lines += [
+            "",
+            "Other sessions of this folder, newest first (full last point of each: "
+            f"{folder}/<session id>.json):",
+        ]
+        lines += [
+            f"- {title(*other, now)}. Last prompt: {other[1]['prompts'][-1][:150]}"
+            for other in others
+        ]
     message = (
-        f'Last point loaded ({age(now - updated)} ago): "{state["prompts"][-1][:80]}". '
+        f"Last point loaded ({age(now - state['updated'])} ago"
+        f'{", " + mark if mark else ""}): "{state["prompts"][-1][:80]}". '
         'Type "continue" to go on from it.'
     )
+    if others:
+        message += f" Other sessions of this folder listed: {len(others)}."
     output = {
         "systemMessage": message,
         "hookSpecificOutput": {
@@ -135,9 +203,10 @@ def show(data):
 
 def main():
     mode = sys.argv[1]
+    pid = int(sys.argv[2]) if len(sys.argv) > 2 else None
     data = json.load(sys.stdin)
     if mode == "show":
-        show(data)
+        show(data, pid)
         return
     path = state_path(data)
     state = load(path)
@@ -156,6 +225,8 @@ def main():
         if not answer:
             return
         state["answer"] = answer
+    if pid:
+        state["pid"] = pid
     save(path, state)
 
 

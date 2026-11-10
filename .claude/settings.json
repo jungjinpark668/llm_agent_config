@@ -37,7 +37,7 @@
           },
           {
             "type": "command",
-            "command": "python3 ~/llm_agent_config/hooks/last-point.py prompt 2>/dev/null || true",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py prompt $PPID 2>/dev/null || true",
             "timeout": 5
           }
         ]
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/llm_agent_config/hooks/last-point.py show 2>/dev/null || true",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py show $PPID 2>/dev/null || true",
             "timeout": 5,
             "statusMessage": "Loading last point..."
           }
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/llm_agent_config/hooks/last-point.py answer 2>/dev/null || true",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py answer $PPID 2>/dev/null || true",
             "timeout": 5
           }
         ]
