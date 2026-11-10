@@ -29,6 +29,7 @@ The Obsidian vault is Codex's persistent memory. When Codex learns something, ma
 **Folders:**
 - `inbox/` — Quick capture, unprocessed thoughts
 - `projects/` — Active, time-bound work (grouped by `project:` frontmatter, no hub files)
+  - `projects/<project>/my-note/` — the user's golden notes. Read-only for agents. Wins over agent notes on conflict.
 - `areas/` — Durable domain knowledge (promoted from projects when reused)
 - `library/` — Atomic reference notes, papers, tools
 - `personal/` — Goals, journal, personal context
@@ -46,7 +47,7 @@ Vault context is loaded via subagents to keep main context clean. The SessionSta
 2. Check if `~/llm_agent_config/vault/projects/<mapped-name>/code-context.md` exists.
    - If missing or stale (>30 days with significant repo activity): spawn a code-explore subagent to generate it (see auto-skills rule 5).
    - If present and fresh: read it directly (it is small, ~25-80 lines).
-3. Spawn an Explore subagent with: "Read vault context for project `<mapped-name>`. Read `~/llm_agent_config/vault/projects/<mapped-name>/working-context.md` (latest checkpoint), search for `project: <mapped-name>` frontmatter to find related notes. Return a structured summary: current goal, plan status, key decisions, open items, active files. Keep summary under 25 lines."
+3. Spawn an Explore subagent with: "Read vault context for project `<mapped-name>`. Read every `.md` in `~/llm_agent_config/vault/projects/<mapped-name>/my-note/` (the user's golden notes; they override agent notes). Read `~/llm_agent_config/vault/projects/<mapped-name>/working-context.md` (latest checkpoint), search for `project: <mapped-name>` frontmatter to find related notes. Return a structured summary: key golden facts from my-note (or `NO GOLDEN NOTE` if my-note is missing or empty), current goal, plan status, key decisions, open items, active files, and any agent-note statement that conflicts with my-note. Keep summary under 25 lines."
 4. The subagent returns only the summary — main context never ingests full vault notes.
 
 **Briefing subagents:** When spawning any subagent for coding work in a project that has a `code-context.md`, read the file and prepend its contents (without frontmatter) to the subagent prompt under a `## Code context` header. This gives the subagent immediate knowledge of the codebase without re-exploration.
@@ -69,13 +70,13 @@ Both hooks resolve the current project from the CWD through `hooks/lib/detect-pr
 | Skill | When to use |
 |-------|-------------|
 | `obsidian-notes` | Taking notes, recalling context, building connections, persistent memory |
-| `obsidian-audit` | Vault health checks — after creating 3+ notes, weekly, or on request |
+| `obsidian-audit` | Vault health checks + golden-note sync against `my-note/` — after creating 3+ notes, weekly, or on request |
 | `project-archaeology` | Reverse-engineer an existing codebase into trustworthy vault documentation (runs once per project) |
 | `checkpoint` | Dump working context to vault for session recovery |
 
 ## Note Quality Gate
 
-**Authoring gate (hard rule):** never create or edit a vault note unless the user explicitly says to write it — suggest, don't self-write. When asked, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `.Codex/rules/obsidian-notes.md`.
+**Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Agents and subagents never create, edit, move, or delete anything there, with any tool including Bash. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md`.
 
 Before writing ANY note to the vault, verify:
 1. **Future value** — Would a future Codex instance genuinely benefit? (not just "nice to have")

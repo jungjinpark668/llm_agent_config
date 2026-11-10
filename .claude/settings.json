@@ -88,7 +88,7 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|NotebookEdit|mcp__filesystem__(write_file|edit_file|move_file|create_directory)",
         "hooks": [
           {
             "type": "command",

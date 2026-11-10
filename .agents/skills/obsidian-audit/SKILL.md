@@ -18,6 +18,8 @@ Run this periodically or after large note-creation sessions to ensure the vault 
 
 Perform each check in order. Report findings in the scorecard at the end.
 
+Files under `vault/projects/*/my-note/` are the user's golden notes. Skip them in checks 2-13: never flag them, never edit them. Only the golden-note sync step (after check 14) reads them.
+
 ### 1. Sync Health
 
 ```bash
@@ -170,6 +172,30 @@ Read `agent/connections.md`:
 
 ---
 
+## Golden-Note Sync (my-note)
+
+`vault/projects/<project>/my-note/` holds the user's hand-written golden notes. They are the source of truth for that project. This step makes agent notes agree with them. It is not part of the 14-point score.
+
+Run it for every folder in `vault/projects/`:
+
+1. List the golden files:
+   ```bash
+   find ~/llm_agent_config/vault/projects/<project>/my-note -type f -name "*.md" 2>/dev/null
+   ```
+2. If the folder is missing or the list is empty, report `NO GOLDEN NOTE: vault/projects/<project>/my-note/ is missing or empty. Golden evaluation skipped.` and go to the next project. Do not create `my-note/`.
+3. Read every golden file in full.
+4. Collect the agent notes: every `.md` in `vault/projects/<project>/` outside `my-note/`, plus any vault note with `project: <project>` in its frontmatter.
+5. For each agent-note statement that a golden note covers, classify it:
+   - AGREES: same fact as my-note.
+   - STALE: describes an older state (status, plan, number, decision) that my-note has moved past.
+   - WRONG: states a fact that my-note contradicts.
+   Statements my-note does not cover are out of scope. Do not judge them.
+6. Fix every STALE and WRONG item in the agent note. Apply the belief-change protocol: move the old wording to the note's `## History` with a dated line `YYYY-MM-DD: superseded by my-note/<file>: <one-line reason>`, then write the golden fact in the body and cite `my-note/<file>`.
+7. Do not rewrite append-only logs (`timeline.md`, past checkpoint entries in `working-context.md`, `agent/session-log.md`). They record what was believed at that time. Report conflicts in them as warnings instead.
+8. Never edit anything in `my-note/`. If two golden files contradict each other, do not pick one: report `GOLDEN CONFLICT: my-note/<a> vs my-note/<b>: <topic>` and leave the related agent notes unchanged.
+
+---
+
 ## Report Format
 
 ```markdown
@@ -198,6 +224,14 @@ Read `agent/connections.md`:
 1. [P0] Critical issue...
 2. [P1] Important issue...
 3. [P2] Nice-to-have...
+
+### Golden-Note Sync
+| Project | Golden files | Agent notes checked | Fixed (stale/wrong) | Status |
+|---------|--------------|---------------------|---------------------|--------|
+| <project> | N | M | K | OK / FIXED / NO GOLDEN NOTE / GOLDEN CONFLICT |
+
+Fixes: `<agent note>`: <old> → <new> (source: `my-note/<file>`)
+Warnings: one line per NO GOLDEN NOTE, GOLDEN CONFLICT, or log conflict.
 ```
 
 ---

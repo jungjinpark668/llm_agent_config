@@ -6,14 +6,25 @@ At session start, the hook provides only project name + checkpoint headers (~8 l
 ## Vault Search
 For vault queries in main context, prefer spawning a subagent to keep context clean. Within subagents, use **mgrep** for semantic search or **Grep** for exact matches. Direct vault reads in main context are acceptable only for single known-path files.
 
-## Authoring Gate + Quality Bar
-**Authoring gate (hard rule).** Never create or edit a vault note unless the user explicitly says to write or update the note. Reading, searching, and user-requested checkpoints are fine; autonomous note-writing is not. When you think a note would help, SUGGEST it and let the user decide — do not write it yourself.
+## Golden Notes (`my-note/`) + Agent Playground
+**Two zones (hard rule).**
+- `vault/projects/<project>/my-note/` holds the user's hand-written golden notes for that project. They are the source of truth. Read-only for every agent and subagent.
+- Everything else in the vault is the agent playground. Agents and subagents may create, edit, and comment on notes there freely, without asking first.
 
-**When the user does ask you to write a note:** ignore length. Optimize only for a dead-simple, concise, unambiguous tone the user can re-read and instantly regain context. Detail bar: a fresh agent with zero prior context must gain the full background from the note alone — define every term and number, cite the source of truth (RTL / code / data / user). Accuracy and completeness are the only quality targets; no filler, no hedging, no narrative padding.
+**Rule 1: never write to `my-note/`.** Never create, edit, move, rename, or delete anything under `vault/projects/*/my-note/`, with any tool: Edit, Write, MCP filesystem tools, or Bash (`>`, `tee`, `sed -i`, `mv`, `cp` into it, `rm`). Reading it is allowed and encouraged. `hooks/protect-files.sh` blocks Edit/Write/MCP writes there. Bash is not hook-checked, so this rule alone covers Bash. Never create a `my-note/` folder; only the user does.
 
-The heuristics below describe when a note is worth SUGGESTING, not when to self-write.
+**Rule 2: my-note wins.** When an agent note conflicts with a my-note statement, the my-note statement is correct. Fix the agent note with the belief-change protocol below (old wording moves to `## History` with a dated line `superseded by my-note/<file>`). Never change my-note to match an agent note. If you believe a my-note statement is wrong, tell the user with your evidence; do not edit it.
 
-**Suggest a note when:**
+**Rule 3: my-note is exempt from vault conventions.** Frontmatter, naming, wikilink, and size rules do not apply to it. Do not flag it or try to fix it in audits.
+
+**Rule 4: golden evaluation.** The `obsidian-audit` skill's golden-note sync step compares each project's agent notes with its `my-note/` and fixes stale or wrong agent notes. If `my-note/` is missing or holds no `.md` file, it prints `NO GOLDEN NOTE: vault/projects/<project>/my-note/ is missing or empty. Golden evaluation skipped.` and skips that project.
+
+## Writing Quality Bar
+**Whenever you write or edit a note:** ignore length. Optimize only for a dead-simple, concise, unambiguous tone the user can re-read and instantly regain context. Detail bar: a fresh agent with zero prior context must gain the full background from the note alone — define every term and number, cite the source of truth (RTL / code / data / user / my-note). Accuracy and completeness are the only quality targets; no filler, no hedging, no narrative padding.
+
+The heuristics below describe when a note is worth writing.
+
+**Write a note when:**
 - A non-obvious solution was found (capture the reasoning, not just the fix)
 - A meaningful connection between ideas surfaces
 - The user explicitly asks to remember something
