@@ -17,6 +17,11 @@ case "$FILE_PATH" in
     *) exit 0 ;;
 esac
 
+# my-note/ holds the user's golden notes: exempt from vault conventions
+case "$FILE_PATH" in
+    */vault/projects/*/my-note/*) exit 0 ;;
+esac
+
 # Skip non-md files
 case "$FILE_PATH" in
     *.md) ;;

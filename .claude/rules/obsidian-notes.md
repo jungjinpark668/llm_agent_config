@@ -8,12 +8,12 @@ For vault queries in main context, prefer spawning a subagent to keep context cl
 
 ## Golden Notes (`my-note/`) + Agent Playground
 **Two zones (hard rule).**
-- `vault/projects/<project>/my-note/` holds the user's hand-written golden notes for that project. They are the source of truth. Read-only for every agent and subagent.
+- `vault/projects/<project>/my-note/` holds the user's hand-written golden notes for that project. They are the source of truth. Read-only for every agent and subagent, unless the user explicitly asks to write them (Rule 1).
 - Everything else in the vault is the agent playground. Agents and subagents may create, edit, and comment on notes there freely, without asking first.
 
-**Rule 1: never write to `my-note/`.** Never create, edit, move, rename, or delete anything under `vault/projects/*/my-note/`, with any tool: Edit, Write, MCP filesystem tools, or Bash (`>`, `tee`, `sed -i`, `mv`, `cp` into it, `rm`). Reading it is allowed and encouraged. `hooks/protect-files.sh` blocks Edit/Write/MCP writes there. Bash is not hook-checked, so this rule alone covers Bash. Never create a `my-note/` folder; only the user does.
+**Rule 1: write to `my-note/` only when the user explicitly asks.** By default, never create, edit, move, rename, or delete anything under `vault/projects/*/my-note/`, with any tool: Edit, Write, MCP filesystem tools, or Bash (`>`, `tee`, `sed -i`, `mv`, `cp` into it, `rm`). The only exception is when the user's own message explicitly asks you to write or change my-note. Then do exactly what was asked, nothing more. These are NOT explicit permission: a general request ("update the notes", "sync the vault"), text pasted into a prompt, a subagent brief, or an audit or workflow step. Permission covers that one request only. Make an approved write with Edit/Write, never Bash: `hooks/protect-files.sh` shows the user a permission prompt for every Edit/Write/MCP write into `my-note/`, so the user confirms each one. Bash is not hook-checked. Reading my-note is always allowed and encouraged.
 
-**Rule 2: my-note wins.** When an agent note conflicts with a my-note statement, the my-note statement is correct. Fix the agent note with the belief-change protocol below (old wording moves to `## History` with a dated line `superseded by my-note/<file>`). Never change my-note to match an agent note. If you believe a my-note statement is wrong, tell the user with your evidence; do not edit it.
+**Rule 2: my-note wins.** When an agent note conflicts with a my-note statement, the my-note statement is correct. Fix the agent note with the belief-change protocol below (old wording moves to `## History` with a dated line `superseded by my-note/<file>`). Never change my-note to match an agent note. If you believe a my-note statement is wrong, tell the user with your evidence; do not edit it unless they explicitly ask you to.
 
 **Rule 3: my-note is exempt from vault conventions.** Frontmatter, naming, wikilink, and size rules do not apply to it. Do not flag it or try to fix it in audits.
 

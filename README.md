@@ -323,7 +323,7 @@ Archaeology notes are written once and never automatically updated. There is no 
 
 | File | Written by | Read by |
 |------|-----------|---------|
-| `vault/projects/<proj>/my-note/*.md` | You only, by hand (golden notes; agent writes blocked by `protect-files.sh`) | Explore subagent (context load), `/obsidian-audit` golden-note sync (fixes agent notes to match) |
+| `vault/projects/<proj>/my-note/*.md` | You by hand, or an agent only when you explicitly ask (golden notes; `protect-files.sh` shows a permission prompt for every agent write) | Explore subagent (context load), `/obsidian-audit` golden-note sync (fixes agent notes to match) |
 | `vault/projects/<proj>/working-context.md` | `/checkpoint` skill | `session-start.sh` (headers), `pre-compact.sh` (headers), Explore subagent (full), `update-timeline.sh` (extract) |
 | `vault/projects/<proj>/timeline.md` | `update-timeline.sh` (auto) | You (in Obsidian or Claude) — reference only, never auto-read |
 | `vault/projects/<proj>/*.md` (archaeology notes) | `/project-archaeology` or `/obsidian-notes` | Explore subagent (found via `project:` frontmatter grep) |

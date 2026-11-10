@@ -29,7 +29,7 @@ The Obsidian vault is Codex's persistent memory. When Codex learns something, ma
 **Folders:**
 - `inbox/` — Quick capture, unprocessed thoughts
 - `projects/` — Active, time-bound work (grouped by `project:` frontmatter, no hub files)
-  - `projects/<project>/my-note/` — the user's golden notes. Read-only for agents. Wins over agent notes on conflict.
+  - `projects/<project>/my-note/` — the user's golden notes. Read-only for agents unless the user explicitly asks to write them. Wins over agent notes on conflict.
 - `areas/` — Durable domain knowledge (promoted from projects when reused)
 - `library/` — Atomic reference notes, papers, tools
 - `personal/` — Goals, journal, personal context
@@ -76,7 +76,7 @@ Both hooks resolve the current project from the CWD through `hooks/lib/detect-pr
 
 ## Note Quality Gate
 
-**Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Agents and subagents never create, edit, move, or delete anything there, with any tool including Bash. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md`.
+**Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Agents and subagents never create, edit, move, or delete anything there, with any tool including Bash, unless the user's own message explicitly asks for that write; then do only what was asked, using Edit/Write so the hook prompts the user to confirm. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md`.
 
 Before writing ANY note to the vault, verify:
 1. **Future value** — Would a future Codex instance genuinely benefit? (not just "nice to have")
