@@ -166,8 +166,8 @@ Read `agent/connections.md`:
 
 ### 14. AGENTS.md / Rules Freshness
 
-- Does `~/.Codex/AGENTS.md` accurately reflect current vault structure?
-- Does `~/.Codex/rules/obsidian-notes.md` match actual conventions being followed?
+- Does `~/.claude/CLAUDE.md` accurately reflect current vault structure?
+- Does `~/.claude/rules/obsidian-notes.md` match actual conventions being followed?
 - Are any instructions stale or contradictory?
 
 ---

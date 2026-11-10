@@ -29,7 +29,7 @@ The Obsidian vault is Codex's persistent memory. When Codex learns something, ma
 **Folders:**
 - `inbox/` — Quick capture, unprocessed thoughts
 - `projects/` — Active, time-bound work (grouped by `project:` frontmatter, no hub files)
-  - `projects/<project>/my-note/` — the user's golden notes. Always read-only for Codex. Wins over agent notes on conflict.
+  - `projects/<project>/my-note/` — the user's golden notes. Read-only for agents unless the user explicitly asks to write them (Claude Code only; Codex never writes them). Wins over agent notes on conflict.
 - `areas/` — Durable domain knowledge (promoted from projects when reused)
 - `library/` — Atomic reference notes, papers, tools
 - `personal/` — Goals, journal, personal context
@@ -45,7 +45,7 @@ Vault context is loaded via subagents to keep main context clean. The SessionSta
 **When starting project work or after compaction:**
 1. Map the current repository name to its vault-safe equivalent (lowercase, underscores/spaces to hyphens).
 2. Check if `~/llm_agent_config/vault/projects/<mapped-name>/code-context.md` exists.
-   - If missing or stale (>30 days with significant repo activity): spawn a code-explore subagent to generate it (see auto-skills rule 5).
+   - If missing or stale (>30 days with significant repo activity): spawn a code-explore subagent to generate it (see auto-skills rule 4).
    - If present and fresh: read it directly (it is small, ~25-80 lines).
 3. Spawn an Explore subagent with: "Read vault context for project `<mapped-name>`. Read every `.md` in `~/llm_agent_config/vault/projects/<mapped-name>/my-note/` (the user's golden notes; they override agent notes). Read `~/llm_agent_config/vault/projects/<mapped-name>/working-context.md` (latest checkpoint), search for `project: <mapped-name>` frontmatter to find related notes. Return a structured summary: key golden facts from my-note (or `NO GOLDEN NOTE` if my-note is missing or empty), current goal, plan status, key decisions, open items, active files, and any agent-note statement that conflicts with my-note. Keep summary under 25 lines."
 4. The subagent returns only the summary — main context never ingests full vault notes.
@@ -71,12 +71,12 @@ Both hooks resolve the current project from the CWD through `hooks/lib/detect-pr
 |-------|-------------|
 | `obsidian-notes` | Taking notes, recalling context, building connections, persistent memory |
 | `obsidian-audit` | Vault health checks + golden-note sync against `my-note/` — after creating 3+ notes, weekly, or on request |
-| `project-archaeology` | Reverse-engineer an existing codebase into trustworthy vault documentation (runs once per project) |
+| `project-archaeology` | Reverse-engineer an existing codebase into trustworthy vault documentation (runs once per project; manual only: the user types `/project-archaeology`) |
 | `checkpoint` | Dump working context to vault for session recovery |
 
 ## Note Quality Gate
 
-**Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Codex never creates, edits, moves, or deletes anything there, with any tool including shell commands, even when the user asks: Codex hooks cannot show a confirmation prompt, so `hooks/protect-files.sh` blocks every Codex write into `my-note/`. If the user asks for a my-note change, tell them to write it by hand or in Claude Code. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md` (its my-note write exception applies to Claude Code only, not Codex).
+**Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Agents and subagents never create, edit, move, or delete anything there, with any tool including Bash, unless the user's own message explicitly asks for that write; then do only what was asked, using Edit/Write so the hook prompts the user to confirm. Codex has no such exception: Codex hooks cannot show a prompt, so `hooks/protect-files.sh` blocks every Codex write into `my-note/`; if the user asks Codex for a my-note change, Codex tells them to write it by hand or in Claude Code. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md`.
 
 Before writing ANY note to the vault, verify:
 1. **Future value** — Would a future Codex instance genuinely benefit? (not just "nice to have")

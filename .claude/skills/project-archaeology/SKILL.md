@@ -1,6 +1,7 @@
 ---
 name: project-archaeology
 description: Systematically reverse-engineer an existing codebase and produce trustworthy Obsidian vault documentation with evidence-tagged claims
+disable-model-invocation: true
 ---
 
 # Project Archaeology

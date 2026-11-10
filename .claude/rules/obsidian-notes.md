@@ -4,7 +4,7 @@
 At session start, the hook provides only project name + checkpoint headers (~8 lines). For deeper vault context, spawn a subagent (type: Explore) to read working-context.md and related notes. The subagent returns a concise summary (~25 lines) to main context. Do NOT read full vault notes directly in main context — always delegate to subagent.
 
 ## Vault Search
-For vault queries in main context, prefer spawning a subagent to keep context clean. Within subagents, use **mgrep** for semantic search or **Grep** for exact matches. Direct vault reads in main context are acceptable only for single known-path files.
+For vault queries in main context, prefer spawning a subagent to keep context clean. Within subagents, use **Grep** for exact text and **Glob** to find notes by name, then read the matches. Direct vault reads in main context are acceptable only for single known-path files.
 
 ## Golden Notes (`my-note/`) + Agent Playground
 **Two zones (hard rule).**

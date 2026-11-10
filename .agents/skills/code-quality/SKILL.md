@@ -22,11 +22,11 @@ Run the 4-agent code quality pipeline on a target repository. The pipeline evalu
 ## Agent spawning protocol
 
 Custom agents (`code-review`, `code-reform`, `code-tester`) are defined in
-`~/.Codex/agents/`. They are auto-discovered as `subagent_type` values only
+`~/.claude/agents/`. They are auto-discovered as `subagent_type` values only
 after a session restart. Within the same session they were created, or if the
 system does not recognize the agent name, use this fallback:
 
-1. Read the agent definition file: `~/.Codex/agents/<agent-name>.md`
+1. Read the agent definition file: `~/.claude/agents/<agent-name>.md`
 2. Strip the YAML frontmatter (the `---` delimited block)
 3. Extract the `tools:` line from frontmatter -- note which tools the agent
    needs (this is informational; the general-purpose agent has all tools)
@@ -44,16 +44,16 @@ system does not recognize the agent name, use this fallback:
 
 ### code-review (read-only)
 ```
-agent_def = Read("~/.Codex/agents/code-review.md")  // strip frontmatter
+agent_def = Read("~/.claude/agents/code-review.md")  // strip frontmatter
 Agent({
   subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.Codex/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+  prompt: "<agent_def body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
 })
 ```
 
 ### code-reform (has write access)
 ```
-agent_def = Read("~/.Codex/agents/code-reform.md")  // strip frontmatter
+agent_def = Read("~/.claude/agents/code-reform.md")  // strip frontmatter
 Agent({
   subagent_type: "general-purpose",
   prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
@@ -62,14 +62,14 @@ Agent({
 
 ### code-tester (read + Bash)
 ```
-agent_def = Read("~/.Codex/agents/code-tester.md")  // strip frontmatter
+agent_def = Read("~/.claude/agents/code-tester.md")  // strip frontmatter
 Agent({
   subagent_type: "general-purpose",
   prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
 })
 ```
 
-This approach keeps the agent logic in `.Codex/agents/` as the single source
+This approach keeps the agent logic in `.claude/agents/` as the single source
 of truth. The skill reads the definition at runtime, so updates to agent files
 take effect immediately without changing the skill.
 
@@ -108,12 +108,12 @@ take effect immediately without changing the skill.
 ### Stage 3: Review
 
 1. Read code-context.md content (strip frontmatter).
-2. Read `~/.Codex/agents/code-review.md`, strip frontmatter to get the agent body.
+2. Read `~/.claude/agents/code-review.md`, strip frontmatter to get the agent body.
 3. Spawn code-review agent using the spawning protocol above:
    ```
    Agent({
      subagent_type: "general-purpose",
-     prompt: "<code-review agent body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.Codex/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+     prompt: "<code-review agent body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
    })
    ```
 4. Write the returned scorecard to `$STAGING/scorecard.md`.
@@ -135,7 +135,7 @@ take effect immediately without changing the skill.
    ```
    Record that a stash was created so it can be restored later.
 
-2. Read `~/.Codex/agents/code-reform.md`, strip frontmatter to get the agent body.
+2. Read `~/.claude/agents/code-reform.md`, strip frontmatter to get the agent body.
 3. Spawn code-reform agent using the spawning protocol:
    ```
    Agent({
@@ -164,7 +164,7 @@ take effect immediately without changing the skill.
 
 **Skip if** `--review-only` or `--dry-run` flags are set.
 
-1. Read `~/.Codex/agents/code-tester.md`, strip frontmatter to get the agent body.
+1. Read `~/.claude/agents/code-tester.md`, strip frontmatter to get the agent body.
 2. Spawn code-tester agent using the spawning protocol:
    ```
    Agent({

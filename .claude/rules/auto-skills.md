@@ -1,7 +1,7 @@
 # Auto-Applied Skills
 
-Six behaviors that apply automatically based on context. Each section lists
-the trigger, condensed rules, and a pointer to the full reference.
+Six behaviors that apply automatically based on context. Each section gives
+the trigger and the action; the skill or agent file holds the full procedure.
 
 ---
 
@@ -11,15 +11,8 @@ the trigger, condensed rules, and a pointer to the full reference.
 
 **Action:** Call the `create-plan` skill via the Skill tool at the start of
 planning. This loads the full template and workflow. Do this BEFORE exploring
-the codebase or writing any plan content.
-
-```
-Skill({ skill: "create-plan" })
-```
-
-The skill defines the output template (Scope, Action Items, Open Questions)
-and the minimal workflow (scan context → ask if blocking → output plan only).
-Follow it as the primary planning workflow.
+the codebase or writing any plan content. Follow it as the primary planning
+workflow.
 
 ---
 
@@ -93,18 +86,10 @@ older than 30 days and the repo has >50 commits since then.
 filesystem MCP tools for exploration, returns markdown content as output.
 Handles adaptive mode selection (conventions-only vs full) internally.
 
-**Invocation:** The agent returns content; the caller writes the file and
-fills in `repo_commit`.
-
-```
-result = Agent({
-  subagent_type: "code-explore",
-  prompt: "REPO_PATH: <CWD>, PROJECT: <mapped-project-name>"
-})
-commit = Bash("git -C <CWD> rev-parse HEAD")
-# Replace <CALLER_FILLS> with commit hash in result
-# Write to vault/projects/<project>/code-context.md
-```
+**Invocation:** Spawn `code-explore` with prompt `REPO_PATH: <CWD>, PROJECT:
+<mapped-project-name>`. It returns content; the caller replaces
+`<CALLER_FILLS>` with `git -C <CWD> rev-parse HEAD` and writes the result to
+`vault/projects/<project>/code-context.md`.
 
 **Briefing protocol:**
 - When spawning any subagent for coding work (implementation, review,
@@ -138,12 +123,9 @@ check whether re-exploration is actually needed:
 "check code quality", "audit the codebase", "review codebase against rules",
 or "run code quality pipeline".
 
-**Action:** Call the `code-quality` skill via the Skill tool. The skill
-handles the full pipeline (explore -> review -> reform -> test).
-
-```
-Skill({ skill: "code-quality", args: "<repo-path> [--review-only] [--dry-run]" })
-```
+**Action:** Invoke the `code-quality` skill with args
+`<repo-path> [--review-only] [--dry-run]`. It runs explore -> review ->
+reform -> test.
 
 **Not triggered by:**
 - Single-file review requests (use built-in `python-code-reviewer`)
@@ -162,12 +144,9 @@ experience", "review automation quality", "improve CLI convenience",
 "check app usability", "generate usage README", or "review developer
 experience".
 
-**Action:** Call the `ux-quality` skill via the Skill tool. The skill
-handles the full pipeline (context -> review -> reform -> test -> README).
-
-```
-Skill({ skill: "ux-quality", args: "<repo-path> [--review-only] [--readme-only] [--dry-run]" })
-```
+**Action:** Invoke the `ux-quality` skill with args
+`<repo-path> [--review-only] [--readme-only] [--dry-run]`. It runs context ->
+review -> reform -> test -> README.
 
 **Not triggered by:**
 - Code quality or style review requests (use `code-quality`)

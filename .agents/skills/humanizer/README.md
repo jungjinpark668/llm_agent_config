@@ -30,7 +30,7 @@ In Claude Code, invoke the skill:
 [paste your text here]
 ```
 
-Or ask Claude to humanize text directly:
+Or ask Codex to humanize text directly:
 
 ```
 Please humanize this text: [your text]
