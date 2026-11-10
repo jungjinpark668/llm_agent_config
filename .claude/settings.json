@@ -34,6 +34,11 @@
             "command": "bash ~/llm_agent_config/hooks/user-prompt-submit.sh",
             "timeout": 5,
             "statusMessage": "Matching project notes..."
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py prompt 2>/dev/null || true",
+            "timeout": 5
           }
         ]
       }
@@ -46,6 +51,17 @@
             "command": "bash ~/llm_agent_config/hooks/session-start.sh",
             "timeout": 10,
             "statusMessage": "Loading vault context..."
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py show 2>/dev/null || true",
+            "timeout": 5,
+            "statusMessage": "Loading last point..."
           }
         ]
       }
@@ -70,6 +86,17 @@
             "command": "bash ~/llm_agent_config/hooks/session-stop.sh",
             "timeout": 5,
             "statusMessage": "Session end check..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/llm_agent_config/hooks/last-point.py answer 2>/dev/null || true",
+            "timeout": 5
           }
         ]
       }

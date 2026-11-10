@@ -590,6 +590,7 @@ Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remo
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
 | inline `echo` in `.claude/settings.json` | Permission request for the sequential-thinking tool | Answer "allow", so plan mode does not ask on every call |
+| `last-point.py` | Each prompt, each answer, each new or cleared session | Save the last 3 prompts and the last answer of every session in `~/.claude/last-point/` (local only). Load the newest one into the next new session of the same folder, so you can type "continue" |
 
 ---
 

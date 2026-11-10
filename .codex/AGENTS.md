@@ -48,6 +48,8 @@ The Obsidian vault is Codex's persistent memory. When Codex learns something, ma
 
 Vault context is loaded via subagents to keep main context clean. The SessionStart hook provides only the project name and checkpoint headers (~8 lines).
 
+**Last point (automatic):** `hooks/last-point.py` saves the last three user prompts and the last answer of every session in `~/.claude/last-point/` (local only, not in the vault). When a session starts new or after `/clear`, a SessionStart hook injects the newest saved last point of the same folder. Use it when the user asks to continue earlier work; do not act on it unasked. It is a short extract, not a checkpoint: for the full state read `working-context.md`, or reopen the conversation with `claude --resume <session id>`.
+
 **When starting project work or after compaction:**
 1. Map the current repository name to its vault-safe equivalent (lowercase, underscores/spaces to hyphens).
 2. Check if `~/llm_agent_config/vault/projects/<mapped-name>/code-context.md` exists.
