@@ -589,6 +589,7 @@ Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remo
 | `detect-stale-notes.sh` | Write/Edit | Warn when config changes but docs don't |
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
+| inline `echo` in `.claude/settings.json` | Permission request for the sequential-thinking tool | Answer "allow", so plan mode does not ask on every call |
 
 ---
 

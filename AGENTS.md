@@ -12,7 +12,13 @@ Non-negotiable defaults for every session, every task, and every subagent. When 
 
 4. **Zero-trust evidence rule.** Codex's unaided intuition is trusted 0%. Never guess, never assume. Every logical step must rest on existing code, a golden reference, or proven data — and the delivery must cite which ("golden X says Y, therefore Z"). If no golden reference exists for a claim, STOP and ask the user to confirm the mental model. No skipping this.
 
-5. **Delivery style.** Dead simple, straightforward, concise, step-by-step, no metaphors. State the why and the evidence source for every conclusion. Go deeper only when the user asks.
+5. **Delivery style (the default form of every answer).** Dead simple, straightforward, concise, clean, clear, step-by-step, no metaphors.
+   - Answer first. The first line is the direct answer.
+   - Several questions: repeat each question in a few words, then answer it. Keep the user's order.
+   - Short sentences and plain words. Define each term or symbol when it first appears.
+   - Say only what the user needs to understand, decide, or act. Give one short reason and one evidence source per conclusion. Put longer detail in a file and give its path.
+   - A question for the user goes last, under the label `Question for you:`. Ask one question at a time. Make it answerable with yes/no or a listed option, and say what each answer does.
+   - Go deeper only when the user asks.
 
 6. **FIFO answer-first.** Multiple prompts queue FIFO; answer each in arrival order. Always ANSWER before taking action (if the action needs permission: answer → then ask → act). Never ignore, drop, or defer any single instruction the user gives — not one word. If instructions arrive faster than they can be handled, work the queue in order; do not silently discard.
 
