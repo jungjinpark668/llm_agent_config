@@ -10,7 +10,9 @@ One repo, synced everywhere — local Mac, lab servers, anywhere you use Claude 
   CLAUDE.md           Master instructions
   settings.json       Permissions, hooks
   rules/              Behavioral rules
-  skills/             Slash commands (checkpoint, obsidian-notes, obsidian-audit, project-archaeology)
+  skills/             Slash commands (checkpoint, obsidian-notes, obsidian-audit, project-archaeology,
+                      study, build, test, review-code, code-quality, ux-quality, ...)
+  agents/             Subagents the skills call (code-tester, code-test-builder, code-review, code-reform, ...)
 hooks/                Shell hooks for session lifecycle and vault validation
 vault/                Obsidian vault (persistent memory)
 ```
@@ -76,6 +78,32 @@ See [Server Sync](#server-sync) for details.
 Just work normally. The hooks handle everything in the background:
 - Vault writes are validated automatically (frontmatter, naming, links).
 - If you edit config files, you'll get a reminder to update vault docs.
+
+### Study, build, test, review (flow commands)
+
+Four commands run the same five steps: name the check, predict with a source, smallest run, compare, record.
+
+| Command | Who starts it | What it does |
+|---|---|---|
+| `/study <question>` | You type it | Turn 1: claim, source, predicted number, smallest run. No code runs. Turn 2, after you say "run it": the run and a predicted-versus-measured table. You write the conclusion in `my-note/` |
+| `/build <task>` | You type it | Turn 1: check, expected-values table with sources, limits, smallest case. No file changes. Turn 2, after you confirm the table: Claude builds the smallest case, then calls `test` and `review-code` |
+| `/test <target>` | You, or Claude when you ask it to test something | Expected values with sources first, then the run, then a predicted-versus-measured table with the command and its output |
+| `/review-code [files or git range]` | You, or Claude after a build passes its check | A fresh read-only `code-review` agent checks the change against its check. It reports only gaps that affect correctness. Nothing is fixed unless you ask |
+
+Which agent each command calls:
+
+| Agent (`.claude/agents/`) | Called by | Job |
+|---|---|---|
+| `code-tester` | `test` (long runs), `code-quality`, `ux-quality` | Runs one check or the test suite and returns the evidence. Never edits |
+| `code-test-builder` | `test` | Writes pytest files: from an expected-values table (spec mode), or to lock current behavior before a refactor (baseline mode) |
+| `code-review` | `review-code` (change mode), `code-quality` (scorecard mode) | Read-only review |
+| `code-reform` | `code-quality` | Applies scorecard fixes |
+
+`/review` is a different command: it is Claude Code's built-in alias of `/code-review`, a general bug review of the current diff.
+
+After you change an agent or a skill, run `./sync-codex.sh`. It regenerates the Codex copies in `.agents/skills/` and `.codex/agents/`.
+
+Design, sources and test results: `vault/projects/llm-agent-config/flow-commands.md`.
 
 ### Saving context (before breaks or long sessions)
 

@@ -13,9 +13,12 @@ Why a separate agent: a reviewer that has not seen your reasoning is not swayed 
 ## 1. Write the brief
 
 1. `REPO_PATH`: the absolute path of the repository.
-2. `CHANGE`: the path of a diff file, plus the list of changed files and new files. The reviewer cannot run git, so write the diff to a file yourself: in your scratchpad directory when the session has one, otherwise `/tmp/review-<repo>-<time>.diff`. Empty target: `git diff HEAD`; if that is empty, `git diff HEAD~1 HEAD`. A target that is a git range or a file list: the diff of exactly that. New untracked files are not in a diff: take them from `git status --short` and add them to the list.
+2. `CHANGE`: the diff, plus the list of changed files and new files. The reviewer cannot run git, so you hand it the diff. Empty target: `git diff HEAD`; if that is empty, `git diff HEAD~1 HEAD`. A target that is a git range or a file list: the diff of exactly that. New untracked files are not in a diff: take them from `git status --short` and add them to the list.
+   - Write the diff to a file outside the repository and give its path: your scratchpad directory when the session has one, otherwise `/tmp/review-<repo>-<time>.diff`.
+   - If you cannot write there, paste the diff output into the brief, unchanged.
+   - Never write the diff file into the repository.
 3. `SPEC`: the task in one sentence, the check (command and pass rule), and the expected-values table with sources. If there is none, write the task as the user stated it and `no check table`.
-4. `CLAIMS`: every result you reported as true (for example "all tests pass", or a measured number). Give each one with its command and the output file, or quote the output lines.
+4. `CLAIMS`: every measured result you reported as true: a check that passed, or a number. Give each one with its command and the output file, or quote the output lines. Results only: no explanations and no side notes.
 
 Leave out your reasoning, your explanation of why the code is right, and the conversation.
 

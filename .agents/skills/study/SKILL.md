@@ -19,12 +19,10 @@ Write no code and run nothing. Reading files, papers and vault notes is allowed,
 
 Answer with these four items and nothing else:
 
-1. Claim. One sentence that can be true or false. Under it, the reason in at most five lines, one logic step per line.
+1. Claim. One sentence that can be true or false. Under it, a table of every symbol you use (symbol, meaning, unit), then the reason in at most five lines, one logic step per line.
 2. Source. Paper and equation number, or file and line, or a `my-note/` file. If you find none, write `no source`. The claim is then a guess, and the user decides whether it is worth a run (doctrine rule 4).
 3. Number. One number, or one plot shape, that must differ if the claim is true. Give the predicted value for each case that will be compared, and how you got it.
 4. Smallest run. The shortest run that measures this number: script or command, input data, seed, expected run time.
-
-Define every symbol in a table before the first equation.
 
 End the turn with this question: "Run it? You can give me your own prediction first." STOP.
 

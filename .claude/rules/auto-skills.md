@@ -130,6 +130,7 @@ reform -> test.
 **Not triggered by:**
 - Single-file review requests (use built-in `python-code-reviewer`)
 - PR review requests (use the `review` skill)
+- Review of one change against its check or spec (use the `review-code` skill)
 - Vault audit requests (use `obsidian-audit`)
 - General "how does this code work?" questions (use Explore subagent)
 

@@ -45,5 +45,5 @@ When the smallest case has passed the check and the review, do the full run if t
 ## Rules for the whole flow
 
 - Every value rests on a source or on a run. Mark anything else `not verified`.
-- Change only what the task needs.
+- Change only what the task needs. A formatting hook may reformat a file you edited: leave its changes, and name them in the final answer.
 - Answer in the default delivery style (doctrine rule 5).
