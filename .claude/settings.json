@@ -24,7 +24,7 @@
       "~/llm_agent_config/vault"
     ]
   },
-  "model": "fable",
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
