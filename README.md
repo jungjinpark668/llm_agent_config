@@ -333,7 +333,7 @@ Archaeology notes are written once and never automatically updated. There is no 
 | `vault/agent/open-questions.md` | Claude | Explore subagent |
 | `vault/agent/instincts.yaml` | Claude | Claude (pattern reference) |
 | `~/.claude/.session-topic` | `/checkpoint` skill | `pre-compact.sh`, `session-stop.sh` (deletes) |
-| `vault/.last-audit` | `/obsidian-audit` skill, `weekly-vault-audit` remote agent | `session-start.sh` (checks if >= 7 days old) |
+| `vault/.last-audit` | `/obsidian-audit` skill, `hooks/weekly-audit.sh` | `session-start.sh` (checks if >= 7 days old) |
 | `hooks/sync.log` | `server-sync.sh` (cron) | You (debugging sync) |
 
 ### Two write paths, one recovery path
@@ -366,7 +366,7 @@ These run without you doing anything — triggered by hooks in `settings.json`.
 | **Claude writes/edits a vault `.md` file** | `detect-stale-notes.sh` | Warns if a config file changed but vault docs weren't updated |
 | **Claude writes `working-context.md`** | `update-timeline.sh` | Appends a checkpoint summary to `timeline.md` — a permanent append-only history |
 | **Every 5 minutes** (cron) | `server-sync.sh` | Auto-commits vault changes and pushes to GitHub |
-| **Every Monday 18:00 UTC** (cloud; 10am LA in winter, 11am in summer) | `Weekly vault audit + golden-note sync` | Clones repo from GitHub, runs audit checks 2-14 (report only) + golden-note sync against `my-note/`, writes `vault/agent/audits/YYYY-MM-DD-vault-audit.md`, stamps `vault/.last-audit` and pushes to main |
+| **Every day 10:00** (launchd agent on this Mac; runs only when the last audit is 7+ days old) | `hooks/weekly-audit.sh` | Runs audit checks 1-14 (report only) + golden-note sync with Claude Code headless, writes the report to `vault/projects/llm-agent-config/`, stamps `vault/.last-audit` |
 | **Claude needs your attention** | `terminal-notifier` | macOS notification popup |
 
 ### When to use each skill
@@ -454,46 +454,50 @@ Next session start (any project)
 
 **Two layers of automation:**
 
-The audit has a local reminder and a weekly cloud run:
+The audit has a reminder and a weekly run. Both happen on this Mac, because project notes (`vault/projects/`) are not in git and exist only here.
 
 ```
-Layer 1 — Local reminder (session-start.sh):
+Layer 1 — Reminder (session-start.sh):
   Every session start → checks vault/.last-audit → nudges if >= 7 days
-  Pros: checks everything (cron, symlinks, sync.log)
-  Cons: only fires when you open Claude Code
 
-Layer 2 — Cloud scheduled task ("Weekly vault audit + golden-note sync"):
-  Every Monday 18:00 UTC (10:00 LA in winter, 11:00 LA in summer)
-  → clones the repo from GitHub → runs checks 2-14 + golden-note sync
-  → writes vault/agent/audits/YYYY-MM-DD-vault-audit.md → stamps vault/.last-audit → pushes to main
-  Pros: runs even if you don't open Claude Code that week
-  Cons: can't see local-only things (cron status, symlinks, sync.log), so check 1 is N/A
+Layer 2 — Weekly local run (hooks/weekly-audit.sh, started by a launchd agent):
+  Every day at 10:00 → runs only if vault/.last-audit is >= 7 days old
+  → Claude Code headless: checks 1-14 (report only) + golden-note sync
+  → writes vault/projects/llm-agent-config/YYYY-MM-DD-vault-audit.md (local, not in git)
+  → stamps vault/.last-audit → shows a desktop notification with the score
 ```
 
-The two layers cover each other's gaps: the cloud run happens on schedule, and the local reminder catches what the cloud run can't see.
+If the Mac is asleep at 10:00, launchd starts the job at the next wake. If a run fails (for example the Claude Code login has expired), nothing is stamped, the run is tried again the next day, and the reminder appears once the last audit is 7 days old.
 
-**What the cloud run changes:**
-- Checks 2-14 only report. Problems go under Action Items in the report. Nothing is renamed or deleted.
+**What the weekly run may change:**
+- Checks 1-14 only report. Problems go under Action Items in the report. Nothing is renamed or deleted.
 - Golden-note sync fixes agent notes that disagree with `my-note/`. The old wording moves to the note's `## History`.
-- It never writes `my-note/`. The repo hooks don't run in the cloud (they point at `~/llm_agent_config`), so before committing the run checks `git status` and undoes any change inside `my-note/` or outside `vault/`.
-- If the push to main fails twice, it pushes to a `claude/vault-audit-YYYY-MM-DD` branch instead.
+- It cannot write `my-note/`, cannot write outside `vault/`, and can run only read-only shell commands. The permission mode (`dontAsk`) and a deny rule enforce this, not the prompt. The script also compares every `my-note/` file before and after the run and warns if one changed.
+- Cost cap per run: 6 USD (`MAX_USD` in the script).
 
-Your Mac gets the pushed report at its next auto-commit: `hooks/server-sync.sh` pulls when its own push is rejected.
+**Setup (once per Mac):**
 
-Requirements:
-- GitHub connected to your Claude account (`/web-setup` or https://claude.ai/connect-github)
-- The repo on GitHub, kept fresh by the 5-minute cron sync
+```bash
+cp ~/llm_agent_config/hooks/weekly-audit.plist ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+```
 
-**To recreate it:** type `/schedule` and ask for a weekly cloud task on `jungjinpark668/llm_agent_config` that runs the obsidian-audit skill with golden-note sync and writes its report to `vault/agent/audits/`. The full prompt of the current task is visible at the link below.
+cron does not work for this job: a cron job cannot read the Claude Code login ("Not logged in"). A launchd agent runs inside your login session and can.
 
-Current task: `trig_019cbJbCKoJJ1SWqMCrmLxA1`
-Manage at: https://claude.ai/code/routines/trig_019cbJbCKoJJ1SWqMCrmLxA1
+**Run it now:** `~/llm_agent_config/hooks/weekly-audit.sh --force`. Log: `hooks/weekly-audit.log`.
 
 **Local reminder setup (already done by default):** The reminder is built into `hooks/session-start.sh`. No extra setup needed. If you want to change the interval from 7 days, edit the line `if [ "$DAYS_SINCE" -ge 7 ]` in the hook.
 
 **To disable the local reminder:** Remove or comment out the "Check if vault audit is overdue" block in `hooks/session-start.sh`.
 
-**To disable the cloud task:** open https://claude.ai/code/routines and turn off or delete "Weekly vault audit + golden-note sync".
+**To disable the weekly run:**
+
+```bash
+launchctl bootout gui/$(id -u)/com.llm-agent-config.weekly-audit
+rm ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+```
+
+**Paused cloud task:** a cloud routine for the same audit exists but is switched off. A cloud run works on the GitHub copy of the repo and cannot see `vault/projects/`. Routine: `trig_019cbJbCKoJJ1SWqMCrmLxA1`, https://claude.ai/code/routines/trig_019cbJbCKoJJ1SWqMCrmLxA1
 
 #### `/project-archaeology` — deep codebase documentation
 
@@ -589,6 +593,7 @@ Server list is defined at the top of `hooks/server-sync.sh` — edit to add/remo
 | `detect-stale-notes.sh` | Write/Edit | Warn when config changes but docs don't |
 | `update-timeline.sh` | Write/Edit | Append checkpoint summaries to timeline |
 | `server-sync.sh` | Cron (5 min) | Auto-commit and push |
+| `weekly-audit.sh` | launchd agent, every day 10:00 | Weekly vault audit + golden-note sync, only when the last audit is 7+ days old |
 | inline `echo` in `.claude/settings.json` | Permission request for the sequential-thinking tool | Answer "allow", so plan mode does not ask on every call |
 | `last-point.py` | Each prompt, each answer, each new or cleared session | Save the last 3 prompts and the last answer of every session in `~/.claude/last-point/` (local only), one file per session. Load them into the next new session of the same folder, so you can type "continue". After `/clear`, the session you just cleared comes first. Sessions still open in another terminal are marked |
 

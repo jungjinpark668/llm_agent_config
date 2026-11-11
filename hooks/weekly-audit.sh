@@ -11,10 +11,16 @@
 #   ./hooks/weekly-audit.sh           # run if the last audit is 7+ days old
 #   ./hooks/weekly-audit.sh --force   # run now
 #
-# What the run may do: Claude Code runs headless in permission mode dontAsk.
-# It can edit files in vault/ (allow rule in .claude/settings.json), it cannot
-# write my-note/ (ask rule, refused in this mode), and its shell commands are
-# limited to read-only ones. This script stamps vault/.last-audit itself.
+# What the run may do: Claude Code runs headless in permission mode dontAsk,
+# with the user-level settings only (no project-local allow rules) and one
+# extra deny rule on my-note/. Tested 2026-11-10 with these exact flags:
+#   - Edit/Write inside vault/: allowed (allow rule in .claude/settings.json).
+#   - Any write into my-note/ (Write tool, shell >, >>, cp, touch, mkdir, tee):
+#     refused.
+#   - Writes outside vault/, rm, crontab, "git -C <path> ...": refused.
+#   - Read-only shell commands (ls, cat, grep, find, wc, tail, date, plain
+#     git status/log): allowed.
+# This script stamps vault/.last-audit itself.
 # Log: hooks/weekly-audit.log. Report: vault/projects/llm-agent-config/.
 
 set -uo pipefail
@@ -64,11 +70,11 @@ Weekly audit of the Obsidian vault at ~/llm_agent_config/vault. Today is $TODAY.
 
 This is an unattended run on the user's Mac. Nobody can answer questions. Wherever a rule says to ask or confirm with the user, write the question under Action Items in the report and keep going.
 
-Permissions of this run: you can change files only inside ~/llm_agent_config/vault/, and only with the Edit and Write tools. Writes to any my-note/ folder are refused. Shell commands are limited to read-only ones (ls, cat, grep, find, wc, head, tail, git status, git log, git diff). A refused call is expected: do not try another way around it. If it blocked a check, say so in the report.
+Permissions of this run: you can change files only inside ~/llm_agent_config/vault/, and only with the Edit and Write tools. Writes to any my-note/ folder are refused. Shell commands are limited to read-only ones (ls, cat, grep, find, wc, head, tail, date, git status, git log, git diff). Your working directory is the repository ~/llm_agent_config, so run git without the -C option: "git -C <path> ..." is refused. Run one plain command per call: no cd, no chains with ; and no find -exec. A refused call is expected: do not try another way around it. If it blocked a check, say so in the report.
 
 Steps:
 1. Read ~/llm_agent_config/.claude/skills/obsidian-audit/SKILL.md and ~/llm_agent_config/.claude/rules/obsidian-notes.md in full. Follow the skill.
-2. Run checks 1-14 on the vault. All 14 checks are report-only: list each problem as an Action Item and do not fix it. For check 1 you cannot run crontab yourself. The wrapper script read it just now: "$CRON_LINE". Read the tail of ~/llm_agent_config/hooks/sync.log and run the git commands of check 1 yourself.
+2. Run checks 1-14 on the vault. All 14 checks are report-only: list each problem as an Action Item and do not fix it. For check 1 you cannot run crontab yourself. The wrapper script read it just now: "$CRON_LINE". Read the tail of ~/llm_agent_config/hooks/sync.log and run the git commands of check 1 yourself, without -C.
 3. Run the skill's Golden-Note Sync section for every folder in vault/projects/. Fix every STALE and WRONG agent note exactly as the skill says: move the old wording to the note's History section with a dated line "YYYY-MM-DD: superseded by my-note/<file>: <one-line reason>", then put the golden fact in the body and cite my-note/<file>. For each project whose my-note folder is missing or holds no .md file, print "NO GOLDEN NOTE: vault/projects/<project>/my-note/ is missing or empty. Golden evaluation skipped." and skip it.
 4. Hard limits for the whole run:
    - Never create, edit, move, rename, or delete anything under vault/projects/*/my-note/. Reading it is fine. Those files are the user's golden notes.
@@ -88,10 +94,14 @@ Steps:
 7. Final message: the score, the Golden-Note Sync table, every warning line, and the report path.
 EOF
 
+# LAST_POINT_DIR keeps this run out of the last-point store of the repo folder,
+# and --no-session-persistence keeps it out of "claude --continue".
+DENY_MY_NOTE='{"permissions":{"deny":["Edit(~/llm_agent_config/vault/projects/*/my-note/**)"]}}'
 log "Audit started"
 RESULT="$(cd "$REPO_DIR" && LAST_POINT_DIR="$WORK/last-point" "$HOME/.local/bin/claude" -p "$PROMPT" \
-    --model sonnet --permission-mode dontAsk --max-budget-usd "$MAX_USD" \
-    --no-session-persistence --output-format json 2>>"$LOG_FILE")"
+    --model sonnet --permission-mode dontAsk --setting-sources user --settings "$DENY_MY_NOTE" \
+    --max-budget-usd "$MAX_USD" --no-session-persistence --output-format json \
+    < /dev/null 2>>"$LOG_FILE")"
 STATUS=$?
 
 IS_ERROR="$(printf '%s' "$RESULT" | jq -r 'if .is_error == false then "false" else "true" end' 2>/dev/null || echo true)"

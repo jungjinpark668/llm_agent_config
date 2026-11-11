@@ -82,6 +82,8 @@ Both hooks resolve the current project from the CWD through `hooks/lib/detect-pr
 | `project-archaeology` | Reverse-engineer an existing codebase into trustworthy vault documentation (runs once per project; manual only: the user types `/project-archaeology`) |
 | `checkpoint` | Dump working context to vault for session recovery |
 
+**Weekly audit (automatic):** `hooks/weekly-audit.sh` runs the `obsidian-audit` checks and the golden-note sync unattended on the Mac. A launchd agent starts it every day at 10:00, and it runs only when `vault/.last-audit` is 7 or more days old. Report: `vault/projects/llm-agent-config/YYYY-MM-DD-vault-audit.md` (local, not in git). The run cannot write `my-note/`.
+
 ## Note Quality Gate
 
 **Golden notes + playground (hard rule):** `vault/projects/<project>/my-note/` holds the user's hand-written golden notes. Agents and subagents never create, edit, move, or delete anything there, with any tool including Bash, unless the user's own message explicitly asks for that write; then do only what was asked, using Edit/Write so the hook prompts the user to confirm. Codex has no such exception: Codex hooks cannot show a prompt, so `hooks/protect-files.sh` blocks every Codex write into `my-note/`; if the user asks Codex for a my-note change, Codex tells them to write it by hand or in Claude Code. On conflict, my-note wins and the agent note gets fixed. The rest of the vault is the agent playground: write, edit, and comment freely without asking. Whenever you write, ignore length; write a dead-simple, unambiguous body a zero-context agent could learn from, with a trailing `## History` section holding all superseded content (body = current truth only). Full rules in `~/llm_agent_config/.claude/rules/obsidian-notes.md`.
