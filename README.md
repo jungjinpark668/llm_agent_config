@@ -472,7 +472,7 @@ If the Mac is asleep at 10:00, launchd starts the job at the next wake. If a run
 **What the weekly run may change:**
 - Checks 1-14 only report. Problems go under Action Items in the report. Nothing is renamed or deleted.
 - Golden-note sync fixes agent notes that disagree with `my-note/`. The old wording moves to the note's `## History`.
-- It cannot write `my-note/`, cannot write outside `vault/`, and can run only read-only shell commands. The permission mode (`dontAsk`) and a deny rule enforce this, not the prompt. The script also compares every `my-note/` file before and after the run and warns if one changed.
+- It cannot write `my-note/` and cannot write outside `vault/`. `rm`, `mv`, scripts, MCP file tools and web tools are refused. Shell commands are limited to read-only ones, plus output redirects to files inside `vault/`. The permission mode (`dontAsk`) and a deny rule enforce this, not the prompt (tested 2026-11-10, table in `vault/projects/llm-agent-config/weekly-audit-local-run.md`). The script also compares every `my-note/` file before and after the run and warns if one changed.
 - Cost cap per run: 6 USD (`MAX_USD` in the script).
 
 **Setup (once per Mac):**

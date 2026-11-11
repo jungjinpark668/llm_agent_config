@@ -17,7 +17,8 @@
 #   - Edit/Write inside vault/: allowed (allow rule in .claude/settings.json).
 #   - Any write into my-note/ (Write tool, shell >, >>, cp, touch, mkdir, tee):
 #     refused.
-#   - Writes outside vault/, rm, crontab, "git -C <path> ...": refused.
+#   - Writes outside vault/, rm, mv, python3 -c, crontab, "git -C <path> ...",
+#     MCP file tools and web tools (WebFetch, WebSearch, fetch): refused.
 #   - Read-only shell commands (ls, cat, grep, find, wc, tail, date, plain
 #     git status/log): allowed.
 # This script stamps vault/.last-audit itself.
