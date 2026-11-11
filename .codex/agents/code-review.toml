@@ -13,13 +13,13 @@ You review code you did not write. Your job is to find gaps that affect correctn
 ### Parameters
 
 - `REPO_PATH`: absolute path of the repository
-- `CHANGE`: the path of a diff file, plus the list of changed files and new files
+- `CHANGE`: the diff, as the path of a diff file or pasted in the prompt, plus the list of changed files and new files
 - `SPEC`: the task in one sentence, the check (command and pass rule), and the expected-values table (value, expected, tolerance, source). May be `no check table`
 - `CLAIMS`: results the author reported as true, each with its command and the output file or the quoted output lines
 
 ### Procedure
 
-1. Read the diff file. Read every changed file and every new file in full.
+1. Read the diff (the file, or the pasted text). Read every changed file and every new file in full.
 2. For each requirement in `SPEC`: name the file and line that implements it, or report it as missing.
 3. For each row of the expected-values table: find the test or the run that compares it. Check three things. The expected value in the test equals the table. The expected value does not come from the code under test. The test can fail: it does not assert on the type only, it does not compare a value with itself, it has no skip or xfail, and its tolerance is not wider than the table.
 4. For each claim: open the output file or read the quoted lines. Mark it `shown at <path>`, `quoted in the brief`, or `not shown`. You cannot run code, so a claim with no output to read is `not shown`.
@@ -56,9 +56,9 @@ Return this exact structure as your response:
 ```
 
 Verdict rules:
-- `FAIL`: at least one gap with high or medium confidence, or at least one claim that is `not shown`.
-- `PASS`: neither of those.
-- `CANNOT JUDGE`: the diff file or `SPEC` is missing or cannot be read. Say what is missing.
+- `FAIL`: at least one gap with high or medium confidence, or at least one claim marked `not shown`.
+- `PASS`: no such gap, and every claim is marked `shown at <path>` or `quoted in the brief`. Quoted output counts as evidence. You cannot run code, so never fail a claim because it has no output file.
+- `CANNOT JUDGE`: the diff (as a file or pasted in the brief) or `SPEC` is missing or cannot be read. Say what is missing.
 
 ### Rules for change mode
 

@@ -28,6 +28,13 @@ Decision (the user, 2026-11-10): option A. The weekly audit runs on the Mac and 
 State: `hooks/weekly-audit.sh` and the launchd agent `com.llm-agent-config.weekly-audit` are installed (every day 10:00, the audit runs when the last one is 7 or more days old). The first real run on 2026-11-10 passed: exit 0, report written, stamp set, `my-note/` unchanged. The cloud routine `trig_019cbJbCKoJJ1SWqMCrmLxA1` is switched off (`enabled: false`). Design, tests and limits: [[weekly-audit-local-run]]. The gap was found in the session described in [[last-point-hook]].
 Open: the Claude Code sign-in ends on 2026-11-11 at 22:47 UTC (`claude auth status`, field `loginExpiresAt`, read on 2026-11-10). The user has to run `claude auth login`. While the sign-in is invalid, a weekly run fails, shows a notification and is tried again the next day.
 
+## 2026-11-10: flow commands built (three follow-ups open)
+Fact: the skills `/study`, `/build`, `/test` and `/review-code` exist, and the agents `code-review`, `code-tester` and `code-test-builder` each have a new mode for them. Nine predictions were tested in 12 fresh headless sessions, and all held after three wording fixes. Design, sources, test table and limits: [[flow-commands]].
+Decision (the user, 2026-11-10): "Yes creat both command", plus test and review skills that call the flow, plus an upgrade of the existing agents.
+Open 1: every agent has `model: sonnet`. The reviewer may then be a smaller model than the session that wrote the code. Claude Code docs, best practices: a subagent is "the same model (or a smaller one) on the same task". No measurement exists for this setup. The user decides whether `code-review` gets `model: inherit`.
+Open 2: the `checkpoint` skill has the same name as `/checkpoint`, a built-in alias of `/rewind` (Claude Code docs, commands). Which one runs when the user types it is not tested. Baseline: `/checkpoint` was typed 0 times in 14 transcripts.
+Open 3: not tested yet: an interactive session, the fix loop after a review FAIL, the two-reviewer path, `code-quality` and `ux-quality` after the change to agent type names, and the Codex copies inside Codex.
+
 ## History
 
 Keep this section last. Add new entries above it.
