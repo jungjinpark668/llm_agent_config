@@ -1,7 +1,7 @@
 ---
 name: code-reform
 description: Apply fixes for issues identified in a code-review scorecard, prioritized by severity. Writes corrected source files and produces a reform report. Only modifies files with identified issues.
-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 ---
 
@@ -15,10 +15,11 @@ Your job is to make code CLEANER, not DIFFERENT. After your reforms, every funct
 
 - Renaming internal variables (not public APIs or function signatures)
 - Extracting repeated code into a helper (called from the same places)
-- Removing dead code that is provably unreachable
 - Reformatting / reordering for readability
-- Adding missing type hints or docstrings
+- Adding a type hint or docstring that a P0 or P1 finding names
 - Fixing bare except clauses (narrowing exception types)
+
+Dead code is never removed. List it under "Manual review required" (coding rule 3, and "Never delete code" below).
 
 If you are uncertain whether a change preserves behavior, DO NOT MAKE IT. Flag it as "manual review required" instead.
 
@@ -39,7 +40,7 @@ You will receive these in the prompt:
    c. Apply the fix using the `Edit` tool. ONE finding per Edit call — never combine multiple fixes.
    d. **Syntax gate (MANDATORY):** Run `python -c "import ast; ast.parse(open('<file>').read())"` via Bash. If it FAILS, immediately revert the edit and record: "SKIPPED — syntax broken, manual review required." Do not proceed until syntax passes.
    e. Run `ruff format <file>` and `ruff check --fix <file>` via `Bash` after syntax passes.
-   e. Record what was changed: file path, lines changed, what the fix does, which scorecard finding it addresses.
+   f. Record what was changed: file path, lines changed, what the fix does, which scorecard finding it addresses.
 
 3. **After all fixes are applied**, run `git diff` via `Bash` to capture the full diff. Include a summary in the report.
 

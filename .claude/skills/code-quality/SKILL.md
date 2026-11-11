@@ -21,16 +21,18 @@ Run the 4-agent code quality pipeline on a target repository. The pipeline evalu
 
 ## Agent spawning protocol
 
-Custom agents (`code-review`, `code-reform`, `code-tester`) are defined in
-`~/.claude/agents/`. They are auto-discovered as `subagent_type` values only
-after a session restart. Within the same session they were created, or if the
-system does not recognize the agent name, use this fallback:
+The agents `code-explore`, `code-review`, `code-reform` and `code-tester` are
+defined in `~/.claude/agents/`, a symlink to this repo's `.claude/agents/`.
+Spawn each one by its own type name, with only the task parameters in the
+prompt. Claude Code then applies the agent's own `tools:` list and `model:`, so
+the read-only reviewer cannot edit, whatever the prompt says.
+
+Fallback, only when the Agent tool rejects the type name (for example when
+`~/.claude/agents/` did not exist when the session started):
 
 1. Read the agent definition file: `~/.claude/agents/<agent-name>.md`
 2. Strip the YAML frontmatter (the `---` delimited block)
-3. Extract the `tools:` line from frontmatter -- note which tools the agent
-   needs (this is informational; the general-purpose agent has all tools)
-4. Spawn via `general-purpose` with the agent body as the system instructions:
+3. Spawn via `general-purpose` with the agent body as the system instructions:
    ```
    Agent({
      subagent_type: "general-purpose",
@@ -38,40 +40,37 @@ system does not recognize the agent name, use this fallback:
    })
    ```
 
-`code-explore` is a built-in subagent type and never needs this fallback.
+In this fallback the agent's tool limits are not enforced. Say so in the summary.
 
 **Concretely, for each agent:**
 
 ### code-review (read-only)
 ```
-agent_def = Read("~/.claude/agents/code-review.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+  subagent_type: "code-review",
+  prompt: "REPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
 })
 ```
 
 ### code-reform (has write access)
 ```
-agent_def = Read("~/.claude/agents/code-reform.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
+  subagent_type: "code-reform",
+  prompt: "REPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
 })
 ```
 
 ### code-tester (read + Bash)
 ```
-agent_def = Read("~/.claude/agents/code-tester.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
+  subagent_type: "code-tester",
+  prompt: "REPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
 })
 ```
 
 This approach keeps the agent logic in `.claude/agents/` as the single source
-of truth. The skill reads the definition at runtime, so updates to agent files
-take effect immediately without changing the skill.
+of truth. Claude Code watches the agent files, so an edit to an agent file takes
+effect at the next delegation, with no restart.
 
 ## Pipeline
 
@@ -108,12 +107,12 @@ take effect immediately without changing the skill.
 ### Stage 3: Review
 
 1. Read code-context.md content (strip frontmatter).
-2. Read `~/.claude/agents/code-review.md`, strip frontmatter to get the agent body.
+2. Use the `code-review` agent by its own type name. Do not paste the agent file into the prompt.
 3. Spawn code-review agent using the spawning protocol above:
    ```
    Agent({
-     subagent_type: "general-purpose",
-     prompt: "<code-review agent body>\n\nREPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
+     subagent_type: "code-review",
+     prompt: "REPO_PATH: <path>\nRULES_PATH: ~/llm_agent_config/.claude/rules/coding-rules.md\n\n## Code context\n<code-context content>"
    })
    ```
 4. Write the returned scorecard to `$STAGING/scorecard.md`.
@@ -135,12 +134,12 @@ take effect immediately without changing the skill.
    ```
    Record that a stash was created so it can be restored later.
 
-2. Read `~/.claude/agents/code-reform.md`, strip frontmatter to get the agent body.
+2. Use the `code-reform` agent by its own type name. Do not paste the agent file into the prompt.
 3. Spawn code-reform agent using the spawning protocol:
    ```
    Agent({
-     subagent_type: "general-purpose",
-     prompt: "<code-reform agent body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
+     subagent_type: "code-reform",
+     prompt: "REPO_PATH: <path>\n\n## Scorecard\n<scorecard content>\n\n## Code context\n<code-context content>"
    })
    ```
 
@@ -164,12 +163,12 @@ take effect immediately without changing the skill.
 
 **Skip if** `--review-only` or `--dry-run` flags are set.
 
-1. Read `~/.claude/agents/code-tester.md`, strip frontmatter to get the agent body.
+1. Use the `code-tester` agent by its own type name. Do not paste the agent file into the prompt.
 2. Spawn code-tester agent using the spawning protocol:
    ```
    Agent({
-     subagent_type: "general-purpose",
-     prompt: "<code-tester agent body>\n\nREPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
+     subagent_type: "code-tester",
+     prompt: "REPO_PATH: <path>\n\n## Reform report\n<reform-report content>\n\n## Code context\n<code-context content>"
    })
    ```
 

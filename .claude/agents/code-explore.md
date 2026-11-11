@@ -1,7 +1,7 @@
 ---
 name: code-explore
 description: Scan a repository and produce code-context.md content. Use when starting project work in a repo that has no code-context.md or when the existing one is stale (>30 days old with >50 recent commits). Read-only — returns the content as output for the caller to write.
-tools: Read, Glob, Grep, mcp__filesystem__directory_tree, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__filesystem__list_directory, mcp__filesystem__list_directory_with_sizes
+tools: Read, Glob, Grep, mcp__filesystem__directory_tree, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__filesystem__list_directory, mcp__filesystem__list_directory_with_sizes, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: ux-reform
 description: Apply fixes for UX issues identified in a ux-review scorecard. Fixes P0 and P1 issues only (command help, error messages, defaults, progress indicators, hardcoded paths). Produces a reform report. Only modifies files with identified issues.
-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 ---
 

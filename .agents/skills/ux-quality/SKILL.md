@@ -22,15 +22,18 @@ Run the 3-agent UX quality pipeline on a CLI/TUI application. The pipeline evalu
 
 ## Agent spawning protocol
 
-Custom agents (`ux-review`, `ux-reform`, `usage-guide-writer`) are defined in
-`~/.claude/agents/`. They are auto-discovered as `subagent_type` values only
-after a session restart. Within the same session they were created, or if the
-system does not recognize the agent name, use this fallback:
+The agents `ux-review`, `ux-reform`, `usage-guide-writer` and `code-tester` are
+defined in `~/.claude/agents/`, a symlink to this repo's `.claude/agents/`.
+Spawn each one by its own type name, with only the task parameters in the
+prompt. Claude Code then applies the agent's own `tools:` list and `model:`, so
+the read-only reviewer cannot edit, whatever the prompt says.
+
+Fallback, only when the Agent tool rejects the type name (for example when
+`~/.claude/agents/` did not exist when the session started):
 
 1. Read the agent definition file: `~/.claude/agents/<agent-name>.md`
 2. Strip the YAML frontmatter (the `---` delimited block)
-3. Extract the `tools:` line from frontmatter (informational; general-purpose agent has all tools)
-4. Spawn via `general-purpose` with the agent body as the system instructions:
+3. Spawn via `general-purpose` with the agent body as the system instructions:
    ```
    Agent({
      subagent_type: "general-purpose",
@@ -38,43 +41,41 @@ system does not recognize the agent name, use this fallback:
    })
    ```
 
+In this fallback the agent's tool limits are not enforced. Say so in the summary.
+
 The existing `code-tester` agent is reused for regression testing.
 
 **Concretely, for each agent:**
 
 ### ux-review (read-only + safe Bash probes)
 ```
-agent_def = Read("~/.claude/agents/ux-review.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Code context\n<code-context content>"
+  subagent_type: "ux-review",
+  prompt: "REPO_PATH: <path>\n\n## Code context\n<code-context content>"
 })
 ```
 
 ### ux-reform (has write access)
 ```
-agent_def = Read("~/.claude/agents/ux-reform.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Scorecard\n<ux-scorecard content>\n\n## Code context\n<code-context content>"
+  subagent_type: "ux-reform",
+  prompt: "REPO_PATH: <path>\n\n## Scorecard\n<ux-scorecard content>\n\n## Code context\n<code-context content>"
 })
 ```
 
 ### usage-guide-writer (write access for README.md only)
 ```
-agent_def = Read("~/.claude/agents/usage-guide-writer.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\nREADME_MODE: generate\n\n## Code context\n<code-context content>\n\n## UX scorecard\n<scorecard content if available>"
+  subagent_type: "usage-guide-writer",
+  prompt: "REPO_PATH: <path>\nREADME_MODE: generate\n\n## Code context\n<code-context content>\n\n## UX scorecard\n<scorecard content if available>"
 })
 ```
 
 ### code-tester (reused from code-quality pipeline)
 ```
-agent_def = Read("~/.claude/agents/code-tester.md")  // strip frontmatter
 Agent({
-  subagent_type: "general-purpose",
-  prompt: "<agent_def body>\n\nREPO_PATH: <path>\n\n## Reform report\n<ux-reform-report content>\n\n## Code context\n<code-context content>"
+  subagent_type: "code-tester",
+  prompt: "REPO_PATH: <path>\n\n## Reform report\n<ux-reform-report content>\n\n## Code context\n<code-context content>"
 })
 ```
 
@@ -106,7 +107,7 @@ Agent({
 **Skip if** `--readme-only` flag is set.
 
 1. Read code-context.md content (strip frontmatter).
-2. Read `~/.claude/agents/ux-review.md`, strip frontmatter to get the agent body.
+2. Use the `ux-review` agent by its own type name. Do not paste the agent file into the prompt.
 3. Spawn ux-review agent using the spawning protocol above.
 4. Write the returned scorecard to `$STAGING/ux-scorecard.md`.
 5. Parse the overall score from the summary table.
@@ -127,7 +128,7 @@ Agent({
    ```
    Record that a stash was created.
 
-2. Read `~/.claude/agents/ux-reform.md`, strip frontmatter to get the agent body.
+2. Use the `ux-reform` agent by its own type name. Do not paste the agent file into the prompt.
 3. Spawn ux-reform agent using the spawning protocol.
 4. Write the returned reform report to `$STAGING/ux-reform-report.md`.
 5. Parse the "Files modified" and "Issues addressed" counts.
@@ -149,7 +150,7 @@ Agent({
 
 **Skip if** `--review-only`, `--readme-only`, or `--dry-run` flags are set.
 
-1. Read `~/.claude/agents/code-tester.md`, strip frontmatter to get the agent body.
+1. Use the `code-tester` agent by its own type name. Do not paste the agent file into the prompt.
 2. Spawn code-tester agent using the spawning protocol.
 3. Write the returned test report to `$STAGING/test-report.md`.
 4. Parse the verdict.
@@ -163,7 +164,7 @@ Agent({
    - If `README.md` exists and `--readme-only`: `update`
    - If `README.md` exists and running full pipeline: `append` (add missing sections only)
 
-2. Read `~/.claude/agents/usage-guide-writer.md`, strip frontmatter to get the agent body.
+2. Use the `usage-guide-writer` agent by its own type name. Do not paste the agent file into the prompt.
 3. Spawn usage-guide-writer agent. Include the UX scorecard in the prompt if available (helps the agent understand what the app does).
 4. The agent writes README.md directly to REPO_PATH.
 5. Record that README was generated/updated.

@@ -1,7 +1,7 @@
 ---
 name: usage-guide-writer
 description: Generate a usage guide (README.md) for CLI/TUI applications. Scans entry points, runs --help, extracts config options, and produces a structured guide with installation, quickstart, command reference, and usage examples. Writes one file only.
-tools: Read, Write, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__filesystem__list_directory, mcp__filesystem__directory_tree
+tools: Read, Write, Glob, Grep, Bash, mcp__filesystem__read_file, mcp__filesystem__read_multiple_files, mcp__filesystem__search_files, mcp__filesystem__list_directory, mcp__filesystem__directory_tree, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 ---
 

@@ -13,7 +13,7 @@ Why a separate agent: a reviewer that has not seen your reasoning is not swayed 
 ## 1. Write the brief
 
 1. `REPO_PATH`: the absolute path of the repository.
-2. `CHANGE`: the path of a diff file, plus the list of changed files and new files. The reviewer cannot run git, so write the diff yourself to `/tmp/review-<repo>-<time>.diff`. Empty target: `git diff HEAD`; if that is empty, `git diff HEAD~1 HEAD`. A target that is a git range or a file list: the diff of exactly that. New untracked files are not in a diff: take them from `git status --short` and add them to the list.
+2. `CHANGE`: the path of a diff file, plus the list of changed files and new files. The reviewer cannot run git, so write the diff to a file yourself: in your scratchpad directory when the session has one, otherwise `/tmp/review-<repo>-<time>.diff`. Empty target: `git diff HEAD`; if that is empty, `git diff HEAD~1 HEAD`. A target that is a git range or a file list: the diff of exactly that. New untracked files are not in a diff: take them from `git status --short` and add them to the list.
 3. `SPEC`: the task in one sentence, the check (command and pass rule), and the expected-values table with sources. If there is none, write the task as the user stated it and `no check table`.
 4. `CLAIMS`: every result you reported as true (for example "all tests pass", or a measured number). Give each one with its command and the output file, or quote the output lines.
 
@@ -25,11 +25,9 @@ Spawn the `code-review` agent by its own type name (`subagent_type: code-review`
 
 For high-stakes output, as defined under "Santa Method Verification" in CLAUDE.md, spawn two reviewers in one message with the same brief. Both must pass.
 
-## 3. Act on the report
+## 3. Check the report yourself
 
-- Open every cited file and line yourself before you act. A reviewer can be wrong. Mark each finding `confirmed` or `not confirmed`, with the reason.
-- Fix only confirmed gaps that affect correctness. Skip style: a reviewer that is asked to find problems always finds something, and fixing every finding adds code nobody needs (Claude Code docs, best practices, "Review against your spec").
-- After a fix, run the check again with the `test` skill, then review again. At most 3 rounds. Then stop and report to the user.
+Open every cited file and line before you repeat a finding. A reviewer can be wrong. Mark each finding `confirmed` or `not confirmed`, with the reason.
 
 ## 4. Report to the user
 
@@ -37,3 +35,10 @@ For high-stakes output, as defined under "Santa Method Verification" in CLAUDE.m
 - One table: file and line, problem, confirmed (yes or no), fixed (yes or no).
 - Claims without evidence.
 - What was not reviewed.
+
+## 5. Fixes
+
+Fix nothing unless the build flow called this skill or the user asked for fixes. When you do fix:
+
+- Fix only confirmed gaps that affect correctness. Skip style: a reviewer that is asked to find problems always finds something, and fixing every finding adds code nobody needs (Claude Code docs, best practices, "Review against your spec").
+- After a fix, run the check again with the `test` skill, then review again. At most 3 rounds. Then stop and report to the user.
