@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd agent for the weekly vault audit (hooks/weekly-audit.sh).
+  Every day at 10:00 local time. If the Mac is asleep then, launchd starts
+  the job at the next wake. The script itself runs the audit only when the
+  last one is 7 or more days old.
+
+  Install:
+    cp ~/llm_agent_config/hooks/weekly-audit.plist ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+  Remove:
+    launchctl bootout gui/$(id -u)/com.llm-agent-config.weekly-audit
+    rm ~/Library/LaunchAgents/com.llm-agent-config.weekly-audit.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.llm-agent-config.weekly-audit</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>exec /bin/bash "$HOME/llm_agent_config/hooks/weekly-audit.sh"</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>10</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+</dict>
+</plist>
