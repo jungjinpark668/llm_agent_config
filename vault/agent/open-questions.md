@@ -36,6 +36,11 @@ Open 2: the `checkpoint` skill has the same name as `/checkpoint`, a built-in al
 Open 3: not tested yet: an interactive session, the fix loop after a review FAIL, the two-reviewer path, `code-quality` and `ux-quality` after the change to agent type names, and the Codex copies inside Codex.
 Open 4 (asked 2026-11-10, not answered): the user goes through the four commands one by one, `/study` first, and asked which agents `/study` should call. Today its skill text names no agent. Proposed, nothing built: (a) a new read-only source finder in turn 1, only when the source is not one known file, returning exact quotes with file and line; (b) a new read-only claim checker in turn 1 that starts without the conversation, opens every cited source, marks each reason line supported or not supported and re-computes the predicted number, with its table shown to the user unchanged; (c) the existing `code-review` agent through `review-code` in turn 2, only when a new script was written for the run. No agent for the run, the user's prediction, or the user's conclusion in `my-note/`. Reasons: Claude Code docs, best practices ("Handing the same task to a subagent doesn't make the answer any better. A fresh reviewer does help"); `vault/agent/session-log.md:12` (Explore subagents garbled details); docs, subagents (Explore starts without CLAUDE.md). Not tested on a theory claim.
 
+## 2026-11-11: MCP survey done, user selection pending
+Fact: the user asked for MCP suggestions based on their usage, with a heavy search and installs prepared for after their choice. Survey, evidence and install plan: [[2026-11-11-mcp-survey]]. Nothing is installed.
+Proposed: 1 replace the archived GitHub server behind `github-gatech` (Claude Code and Codex) with GitHub's official server, read-only; 2 `pyright-lsp` plugin; 3 slang-server LSP plugin for SystemVerilog; 4 Zotero (`zotero-mcp-server` CLI and skill, read-only); 5 official OpenAlex server. Optional: 6 Wolfram Cloud MCP; 7 pin server versions.
+Open: the user picks the numbers. Items 4 and 5 need one user action each (a Zotero setting; an OpenAlex sign-in).
+
 ## History
 
 Keep this section last. Add new entries above it.
