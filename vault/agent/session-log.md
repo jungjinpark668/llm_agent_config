@@ -192,3 +192,11 @@
 **Key decisions:** wc is the contract corner; bc is information only (bc closed about +0.054). Array stays at round 2 (top D within 0.010). Top `make ready` replaced the Nov 9 build in `final/` (user: "Without my permission go to do toplevel too ... finalize").
 **Open:** Top PASS margin is 0.006 ns, set by the array's 0.047 centre spread. bc hold count 3895 (fast corner now real). Two `.ruff_cache` folders on the server await the user's OK to delete. `src/` changes are not committed.
 **Connections:** [[dll-clock-balancing]] ← [[dll-report-guide]] (the guide reads the reports the method writes)
+
+## 2026-11-12 (hive_2026 DLL reports, round 4)
+**Worked on:** hive_2026: the DLL clock reports of `tiles_array_26` and `hive_soc_toplevel` rewritten at the user's request (one set of terms: memory, sample, tile, ref; "rebalance" instead of "trim"; names `<name>[_<when>].<step>.rpt`; measured numbers only), then both blocks rerun and finalized (`make design`, `make ready`).
+**What worked:** No-save check tests on the saved route blocks before the full runs (top 88 s, array 139 s) reproduced the previous finals with the new layout. Static checks (every DLL_ENV key read is written, every proc defined once) before the long runs. Gating `make ready` on the report, because `make design` returns success even when icc2 fails. Typing `exit` into the top pt_shell only after a read-only trace had closed the old `final/` block.
+**What failed:** A Python search over the 4.7 MB netlist with a nested loop timed out; plain grep did the same job in a second.
+**Key decisions:** closed, array says, D, A, B, bypass and centre removed from the reports (derived numbers); the cross-check top vs array ref - tile stays a manual rule in the array check header. Local mirror report folders made equal to the server (old round-3 files deleted locally, as the user asked earlier).
+**Open:** wc clk_tile setup WNS +0.92 (round 3 +3.01), still met: a clock_opt hold-fix DEL2 on a clk_cpu -> clk_tile half-cycle path into `obps_clk_mux`; not a DLL clock effect. Two `.ruff_cache` folders on the server. `src/` not committed.
+**Connections:** [[dll-report-guide]] ← [[dll-clock-balancing]] (the guide reads the reports the method writes)
