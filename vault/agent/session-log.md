@@ -200,3 +200,11 @@
 **Key decisions:** closed, array says, D, A, B, bypass and centre removed from the reports (derived numbers); the cross-check top vs array ref - tile stays a manual rule in the array check header. Local mirror report folders made equal to the server (old round-3 files deleted locally, as the user asked earlier).
 **Open:** wc clk_tile setup WNS +0.92 (round 3 +3.01), still met: a clock_opt hold-fix DEL2 on a clk_cpu -> clk_tile half-cycle path into `obps_clk_mux`; not a DLL clock effect. Two `.ruff_cache` folders on the server. `src/` not committed.
 **Connections:** [[dll-report-guide]] ← [[dll-clock-balancing]] (the guide reads the reports the method writes)
+
+## 2026-11-13
+**Worked on:** beamforming-lms-tracker-tsmc28-test right plot: is the supply-current pass/fail rule valid, and why TRO / 2 at 200 MHz looks alive. Bench readout of the island's raw weights (MISR bypass, write buffer 1), 11 runs.
+**What worked:** reading 8 raw 2776-bit words per reading and checking steps / |w| against the run's safe point; the 88 zero pad bits proved the layout (984 words, 0 bad). Walking past the collapse (`--shmoo-through`) at weak codes showed three regimes in one run: correct, frozen at w = 0, random with full current.
+**What failed:** the first C1 rule (steps only) passed an oversized-weight state and had a zero limit when the safe point itself was frozen; fixed with a |w| check, an all-runs reference and a 2-of-8-words rule. A walk past the collapse at code 2047 (TRO) put 1.226 V on the die for seconds (escape at 546 mA, then re-collapse; ch2-to-die 0.546 ohm); the guard is reactive. I also claimed a code-127 pass at 55 MHz from an assumed divider list; the list ended at /12.
+**Key decisions:** proposed rule = current and weights together, a current drop that undoes itself ignored; through-walk only at codes <= 31; a restart-after-collapse walk is the next step (load_init is the header-code strobe, not an island re-init).
+**Open:** what sets w = 0 and what the partial low state is; robust fixed-clock limits; ch2 ceiling (user decision).
+**Connections:** [[2026-11-13-unicap-weight-word-check]] <- [[2026-11-11-unicap-fmax-vs-voltage]] (section 5.8 moved out); [[2026-11-12-dac2027-dvfs-four-cases]] (TRO / 2 runs judged invalid).
