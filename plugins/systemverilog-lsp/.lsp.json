@@ -1,0 +1,11 @@
+{
+  "slang": {
+    "command": "slang-server",
+    "extensionToLanguage": {
+      ".sv": "systemverilog",
+      ".svh": "systemverilog",
+      ".v": "verilog",
+      ".vh": "verilog"
+    }
+  }
+}

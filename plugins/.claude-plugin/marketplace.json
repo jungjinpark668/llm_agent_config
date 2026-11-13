@@ -1,0 +1,12 @@
+{
+  "name": "llm-agent-config",
+  "description": "Local plugins of the llm_agent_config repository",
+  "owner": { "name": "llm_agent_config" },
+  "plugins": [
+    {
+      "name": "systemverilog-lsp",
+      "source": "./systemverilog-lsp",
+      "description": "SystemVerilog and Verilog code intelligence through slang-server"
+    }
+  ]
+}

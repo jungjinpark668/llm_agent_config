@@ -1,0 +1,5 @@
+{
+  "name": "systemverilog-lsp",
+  "version": "0.1.0",
+  "description": "SystemVerilog and Verilog code intelligence through slang-server (binary installed separately; index settings in ~/.slang/server.json)"
+}
