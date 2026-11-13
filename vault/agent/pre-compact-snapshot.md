@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-12 20:21
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src/sapr/apr/tiles_array_26/user
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-12 20:54
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-12 21:08
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-12 21:27
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src/sapr/apr
@@ -45,9 +35,19 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-12 22:13
 
 **CWD:** /Users/parkjungjin/llm_agent_config/vault/projects/llm-agent-config
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-12 22:16
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src/sapr/apr
 
 ### Git State
 
