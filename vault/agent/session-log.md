@@ -208,3 +208,11 @@
 **Key decisions:** proposed rule = current and weights together, a current drop that undoes itself ignored; through-walk only at codes <= 31; a restart-after-collapse walk is the next step (load_init is the header-code strobe, not an island re-init).
 **Open:** what sets w = 0 and what the partial low state is; robust fixed-clock limits; ch2 ceiling (user decision).
 **Connections:** [[2026-11-13-unicap-weight-word-check]] <- [[2026-11-11-unicap-fmax-vs-voltage]] (section 5.8 moved out); [[2026-11-12-dac2027-dvfs-four-cases]] (TRO / 2 runs judged invalid).
+
+## 2026-11-13
+**Worked on:** hive_2026 DLL clock balancing, overnight: control files rewritten (template style, P_ procs), 06 order route_opt then ECO rebalance, both corners judged, full runs of tiles_array_26 (round 9 + make ready) and hive_soc_toplevel (round 9), tile <-> memory check, deck v9 (artifact ETKNLMBasUvTWR6f3ySSF6).
+**What worked:** old vs new code on the same saved blocks gave identical per-tile values (proof of the rewrite). Round 9 array wc PASS 18/18 after keeping the first added buffer fixed (all 18 hang on one CTS net). Top wc PASS 18/18, D within 0.010 in both corners. `change_abstract -view design -references tiles_array_26` at the top shows every tile's tile -> memory paths (10 s) with the same worst values as the abstract.
+**What failed:** round 8: resizing the shared first buffers moved every dummy (+0.0087 ns wc), so the sweep mispredicted and tiles 02, 06 failed wc. Run-to-run: route_auto with 32 threads is not deterministic (up to 0.001 ns).
+**Key decisions:** no main step change tonight beyond the change note; deterministic mode and a closed-loop hold margin left to the user; top make ready not run (user's rule).
+**Open:** closed loop bc estimate: tile -> memory hold below 0 for tiles 02, 03, 08, 09 (x = ref - sample up to 0.056 ns); bc ref - tile fails in both blocks (level shifter bc/wc ratio); commit/push waits for the user.
+**Connections:** [[dll-clock-balancing]] <- [[2026-11-13-main-step-changes]] (every main step line changed); [[2026-11-12-dll-enable-450ps-gap]] (next step: programmable tile clock delay).
