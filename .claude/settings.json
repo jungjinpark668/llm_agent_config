@@ -17,7 +17,12 @@
       "mcp__sequential-thinking__sequentialthinking"
     ],
     "ask": [
-      "Edit(~/llm_agent_config/vault/projects/*/my-note/**)"
+      "Edit(~/llm_agent_config/vault/projects/*/my-note/**)",
+      "mcp__wolfram__WolframAlpha",
+      "mcp__wolfram__WolframLanguageEvaluator"
+    ],
+    "deny": [
+      "mcp__wolfram__WolframContext"
     ],
     "defaultMode": "auto",
     "additionalDirectories": [
