@@ -7,6 +7,7 @@ Where it cannot run it stops with a plain message.
 
 import argparse
 import base64
+import ctypes
 import hashlib
 import importlib.util
 import itertools
@@ -76,7 +77,12 @@ DEFAULT_ENTRY = "frame-emulator.gen.js"
 SAFE_PATH = "/usr/local/bin:/usr/bin:/bin"
 PAUSE_S = 2.0
 PROGRAM_DEADLINE_S = 240
-TOTAL_BUDGET_S = 570  # SKILL.md tells Claude to allow ten minutes
+# Total seconds for all runs until one works. Under SKILL.md's ten-minute timeout, so a first run stops before it is cut off.
+TOTAL_BUDGET_S = 570
+SECONDS_FILE = "set-up-seconds"  # in ROOT: one byte for each second counted
+FORGET_AFTER_S = 86400  # after this long with nothing added to the file, its seconds no longer count
+OUT_OF_TIME = ("set-up has taken too long, counting any earlier tries here. Do not run this again in the next 24 hours; "
+               "carry on without the emulator")
 # curl exit codes worth another try: could not resolve or connect, TLS handshake failed, empty reply, connection reset.
 RETRY_EXITS = (5, 6, 7, 35, 52, 56)
 NOT_HERE = "what this skill needs is not in this session, so it cannot run here. Carry on without it"
@@ -610,15 +616,61 @@ def write_wrapper(path, bun, python, program_dir, entry, root, ca, chromium):
     return os.path.realpath(path)
 
 
-def run_bundle(command, ctx, timeout):
+def count_seconds(root):
+    """Adds a byte to root's SECONDS_FILE now and then once a second, from a SIGALRM handler, and exits the script when the
+    file holds TOTAL_BUDGET_S bytes or cannot be written. All runs share the file, which is emptied first if nothing was
+    added for FORGET_AFTER_S. The caller ends the counting with signal.setitimer(signal.ITIMER_REAL, 0)."""
+    safe_root(root)
+    owner_only(root, "what is installed there")
+    fd = os.open(os.path.join(root, SECONDS_FILE), os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    if abs(time.time() - os.fstat(fd).st_mtime) > FORGET_AFTER_S:  # abs: the clock may have been set back
+        os.ftruncate(fd, 0)
+
+    def tick(*_):
+        try:
+            if os.fstat(fd).st_size < TOTAL_BUDGET_S:
+                os.write(fd, b".")
+                return
+            reason = OUT_OF_TIME
+        except OSError as e:
+            reason = f"could not keep count of set-up time ({e.strerror}). Carry on without the emulator"
+        # No "except" in this script catches SystemExit, and subprocess.run kills the program it is waiting for.
+        # Python drops an exception raised in a destructor or callback, so the timer fires again, after time to clean up.
+        signal.setitimer(signal.ITIMER_REAL, 5, 1)
+        sys.exit(f"artifact-emulator: stopped: {reason}")
+
+    signal.signal(signal.SIGALRM, tick)
+    signal.pthread_sigmask(signal.SIG_UNBLOCK, [signal.SIGALRM])  # a parent's blocked signals are inherited
+    tick()
+    signal.setitimer(signal.ITIMER_REAL, 1, 1)
+
+
+def clear_seconds(root):
+    # Deleted, not emptied: a run still going keeps counting in the deleted file, so its limit holds.
+    try:
+        os.unlink(os.path.join(root, SECONDS_FILE))
+    except FileNotFoundError:
+        pass
+
+
+def die_with_this_script():
+    """Returns a preexec_fn for subprocess: the kernel kills the child when this script ends, however it ends."""
+    prctl, parent = ctypes.CDLL(None).prctl, os.getpid()
+
+    def in_child():
+        prctl(1, ctypes.c_ulong(signal.SIGKILL))  # 1 is PR_SET_PDEATHSIG
+        if os.getppid() != parent:  # the script ended before the prctl call
+            os._exit(1)
+    return in_child
+
+
+def run_bundle(command, ctx):
     """Ask the program to download the viewer, which it checks against the viewer's manifest, and the runtime."""
     cmd = [command, "bundle", "--shell-latest", ctx["base"], "--runtime-url", ctx["base"] + "/emulator/runtime",
            "--token-file", ctx["token_file"]]
     token = read_token(ctx["token_file"])  # only to keep it out of anything printed below
-    try:
-        p = subprocess.run(cmd, capture_output=True, text=True, cwd="/", timeout=timeout)
-    except subprocess.TimeoutExpired:
-        raise Stop("downloading the viewer and runtime took too long; run this again")
+    # No timeout: count_seconds ends this script, and the program with it.
+    p = subprocess.run(cmd, capture_output=True, text=True, cwd="/", preexec_fn=die_with_this_script())
     if p.returncode != 0:
         tail = p.stderr.strip().replace(token, "[token]")
         try:
@@ -642,15 +694,17 @@ def main():
                                  "(checked here against its published sha256 hashes), then the viewer and runtime "
                                  "(fetched by the program). Prints one JSON line: command, shellDir, runtimeDir, workDir, "
                                  "and node and playwright where SKILL.md's step 3 is to use Node Playwright. "
-                                 "Safe to run again. Takes no options other than -h.")
+                                 "Safe to run again; until one run works, all runs share about ten minutes, after which it "
+                                 "refuses for 24 hours. "
+                                 "Takes no options other than -h.")
     ap.parse_args()  # -h prints the description; anything else is refused before a file is read or a request sent
     os.umask(0o022)
-    start = time.monotonic()
     ticket = None
     try:
         # Before any check that can stop the run, so that a run that stops has still deleted the saved code.
         code = None if os.path.isfile(session_token_file()) else take_code()
         base, token_file, tools = preflight(code)
+        count_seconds(ROOT)
         if code is not None:
             # A run that is told to stop deletes the ticket too.
             on_stop_signals(lambda *_: (on_stop_signals(signal.SIG_IGN), sys.exit(1)))
@@ -664,7 +718,8 @@ def main():
             tools["driver"]["node"] = private_node(*tools["driver"].pop("copy_of"))
         command = write_wrapper(COMMAND, tools["bun"], tools["python"], program_dir, entry, ROOT, tools["ca"],
                                 tools["chromium"])
-        shell_dir, runtime_dir = run_bundle(command, ctx, max(60, TOTAL_BUDGET_S - (time.monotonic() - start)))
+        shell_dir, runtime_dir = run_bundle(command, ctx)
+        clear_seconds(ROOT)
     except (Stop, OSError) as e:
         say(f"artifact-emulator: stopped: {e}")
         return 1
@@ -677,6 +732,7 @@ def main():
             pass
         return 1
     finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
         if ticket is not None:
             on_stop_signals(signal.SIG_IGN)
             try:
