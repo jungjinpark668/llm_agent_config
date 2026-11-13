@@ -22,11 +22,11 @@ load scan init only — RTL-proven, see [[spi-streaming-protocol]] meta-map
 CORRECTION). Future recipe lives in that note's open-side-quests list:
 clk_update_counter_stop -> sync-div period probe. User: "some day I'll check it."
 
-## 2026-11-10: weekly audit runs on the Mac (resolved, one follow-up open)
+## 2026-11-10: weekly audit runs on the Mac (resolved)
 Fact: `.gitignore` line 20 (`**/projects/`, since commit 04c4b6e, 2026-04-30) also matches `vault/projects/`. `git ls-files vault/projects` returns 0 files, so project notes and `my-note/` exist only on the Mac. A cloud run works on a clone of the GitHub repo, so it cannot see them.
 Decision (the user, 2026-11-10): option A. The weekly audit runs on the Mac and project notes stay off GitHub. Option B (stop ignoring `vault/projects/` so that a cloud routine can read the notes) was not chosen.
 State: `hooks/weekly-audit.sh` and the launchd agent `com.llm-agent-config.weekly-audit` are installed (every day 10:00, the audit runs when the last one is 7 or more days old). The first real run on 2026-11-10 passed: exit 0, report written, stamp set, `my-note/` unchanged. The cloud routine `trig_019cbJbCKoJJ1SWqMCrmLxA1` is switched off (`enabled: false`). Design, tests and limits: [[weekly-audit-local-run]]. The gap was found in the session described in [[last-point-hook]].
-Open: the Claude Code sign-in ends on 2026-11-11 at 22:47 UTC (`claude auth status`, field `loginExpiresAt`, read on 2026-11-10). The user has to run `claude auth login`. While the sign-in is invalid, a weekly run fails, shows a notification and is tried again the next day.
+Sign-in (resolved 2026-11-12): `claude auth status` on 2026-11-12 shows `loggedIn: true` and `loginExpiresAt` 2026-12-09T23:12:28Z. While a sign-in is invalid, a weekly run fails, shows a notification and is tried again the next day; check `loginExpiresAt` before 2026-12-09.
 
 ## 2026-11-10: flow commands built (three follow-ups open)
 Fact: the skills `/study`, `/build`, `/test` and `/review-code` exist, and the agents `code-review`, `code-tester` and `code-test-builder` each have a new mode for them. Nine predictions were tested in 12 fresh headless sessions, and all held after three wording fixes. Design, sources, test table and limits: [[flow-commands]].
@@ -36,14 +36,22 @@ Open 2: the `checkpoint` skill has the same name as `/checkpoint`, a built-in al
 Open 3: not tested yet: an interactive session, the fix loop after a review FAIL, the two-reviewer path, `code-quality` and `ux-quality` after the change to agent type names, and the Codex copies inside Codex.
 Open 4 (asked 2026-11-10, not answered): the user goes through the four commands one by one, `/study` first, and asked which agents `/study` should call. Today its skill text names no agent. Proposed, nothing built: (a) a new read-only source finder in turn 1, only when the source is not one known file, returning exact quotes with file and line; (b) a new read-only claim checker in turn 1 that starts without the conversation, opens every cited source, marks each reason line supported or not supported and re-computes the predicted number, with its table shown to the user unchanged; (c) the existing `code-review` agent through `review-code` in turn 2, only when a new script was written for the run. No agent for the run, the user's prediction, or the user's conclusion in `my-note/`. Reasons: Claude Code docs, best practices ("Handing the same task to a subagent doesn't make the answer any better. A fresh reviewer does help"); `vault/agent/session-log.md:12` (Explore subagents garbled details); docs, subagents (Explore starts without CLAUDE.md). Not tested on a theory claim.
 
-## 2026-11-11: MCP survey done, user selection pending
-Fact: the user asked for MCP suggestions based on their usage, with a heavy search and installs prepared for after their choice. Survey, evidence and install plan: [[2026-11-11-mcp-survey]]. Nothing is installed.
-Proposed: 1 replace the archived GitHub server behind `github-gatech` (Claude Code and Codex) with GitHub's official server, read-only; 2 `pyright-lsp` plugin; 3 slang-server LSP plugin for SystemVerilog; 4 Zotero (`zotero-mcp-server` CLI and skill, read-only); 5 official OpenAlex server. Optional: 6 Wolfram Cloud MCP; 7 pin server versions.
-Open: the user picks the numbers. Items 4 and 5 need one user action each (a Zotero setting; an OpenAlex sign-in).
+## 2026-11-11: MCP survey; items 1-5 installed 2026-11-12 (three follow-ups open)
+Fact: the user asked for MCP suggestions based on their usage, with a heavy search and installs prepared for after their choice. Survey, evidence, install results: [[2026-11-11-mcp-survey]].
+Decision (the user, 2026-11-12): "1-5". Installed and checked on 2026-11-12: 1 GitHub's official server, read-only, behind `github-gatech` (Claude Code and Codex); 2 `pyright-lsp` plugin (pyright 1.1.414 through npm, because Homebrew began rebuilding Node.js); 3 slang-server plugin `systemverilog-lsp` with `~/.slang/server.json`; 4 `zotero-cli` skill, read-only; 5 OpenAlex server.
+Open 1: the user asked for more explanation of 6 (Wolfram Cloud MCP) and 7 (pin versions); explained 2026-11-12 (note section 4), no decision yet. Agent's recommendation: skip 6 (SymPy through Bash instead), do 7 in the install-once form.
+Open 2: OpenAlex needs the user's sign-in (`/mcp`, openalex, Authenticate); its `get_work` check is pending.
+Open 3: Claude Code's LSP tool drops result locations in git-ignored files (proven in a scratch repo, 2026-11-12). tsmc28 keeps 340 of 346 HDL files in git-ignored `reference/`, so slang navigation does not reach them there. No setting found (`respectGitignore: false` does not change it).
 
 ## History
 
 Keep this section last. Add new entries above it.
+
+- 2026-11-12, entry "MCP survey": the lines below are the entry as it stood before the user chose items 1-5. Kept word for word.
+  - Old heading: `2026-11-11: MCP survey done, user selection pending`.
+  - Old lines: Fact: the user asked for MCP suggestions based on their usage, with a heavy search and installs prepared for after their choice. Survey, evidence and install plan: [[2026-11-11-mcp-survey]]. Nothing is installed. / Proposed: 1 replace the archived GitHub server behind `github-gatech` (Claude Code and Codex) with GitHub's official server, read-only; 2 `pyright-lsp` plugin; 3 slang-server LSP plugin for SystemVerilog; 4 Zotero (`zotero-mcp-server` CLI and skill, read-only); 5 official OpenAlex server. Optional: 6 Wolfram Cloud MCP; 7 pin server versions. / Open: the user picks the numbers. Items 4 and 5 need one user action each (a Zotero setting; an OpenAlex sign-in).
+  - Changed because: the user chose 1-5 on 2026-11-12 and all five were installed. The Zotero setting turned out not to be needed for reading (search and page reads worked with Zotero closed).
+- 2026-11-12, entry "weekly audit runs on the Mac": old heading `2026-11-10: weekly audit runs on the Mac (resolved, one follow-up open)`. Old line, resolved because the sign-in is valid until 2026-12-09: Open: the Claude Code sign-in ends on 2026-11-11 at 22:47 UTC (`claude auth status`, field `loginExpiresAt`, read on 2026-11-10). The user has to run `claude auth login`. While the sign-in is invalid, a weekly run fails, shows a notification and is tried again the next day.
 
 - 2026-11-10, entry "weekly audit runs on the Mac": the lines below are the entry as it stood before the local run was built and tested on the same day. They are kept word for word.
   - Old heading: `2026-11-10: weekly cloud audit cannot see project notes (decision needed)`. Changed because the user decided for option A.
