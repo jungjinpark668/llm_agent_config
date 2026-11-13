@@ -191,7 +191,9 @@
     "dx@ykdojo": true,
     "caveman@caveman": true,
     "ponytail@ponytail": true,
-    "cc-plugin-you-should-know@builtin": true
+    "cc-plugin-you-should-know@builtin": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "systemverilog-lsp@llm-agent-config": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -204,6 +206,12 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "llm-agent-config": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/parkjungjin/llm_agent_config/plugins"
       }
     }
   },
