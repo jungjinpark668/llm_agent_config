@@ -216,3 +216,11 @@
 **Key decisions:** no main step change tonight beyond the change note; deterministic mode and a closed-loop hold margin left to the user; top make ready not run (user's rule).
 **Open:** closed loop bc estimate: tile -> memory hold below 0 for tiles 02, 03, 08, 09 (x = ref - sample up to 0.056 ns); bc ref - tile fails in both blocks (level shifter bc/wc ratio); commit/push waits for the user.
 **Connections:** [[dll-clock-balancing]] <- [[2026-11-13-main-step-changes]] (every main step line changed); [[2026-11-12-dll-enable-450ps-gap]] (next step: programmable tile clock delay).
+
+## 2026-11-13
+**Worked on:** beamforming-lms-tracker-tsmc28-test, DAC 2027 right plot (island f/v, TRO clock vs fixed clock): same-state check with 10 state-B bench walks, the same-state figure, clean-context review 3 parts A-D, page published (https://claude.ai/artifact/YKLqGSemNs4awhXrSyn3V6).
+**What worked:** judging the fixed clock in the TRO's weight state (over-clock at code 1023 /10 to enter class B, step down at a safe divider, walk the target code) removed the state confound; a clean-context reviewer that re-implemented the rule found 27 page mismatches over parts B-D; the page's reproduce block remade 11 of 11 files byte for byte.
+**What failed:** review 3 part B's claim that Figure 1's fixed line marks the first change of weight state (true only at codes 511 and 1023); "quiet fails are stored" was too broad (walk 103014 keeps no activity drop).
+**Key decisions:** recommend the same-state figure for the paper (ratios 2.18 to 1.48 at codes 15-127, 1.11 at 255, 0.99-1.03 at 511-2047); leave jump walk 211109 out of it, as in the slowed-clock figure.
+**Open:** the user's choice of paper figure; vector formats (SVG/EPS/EMF) not asked yet.
+**Connections:** [[2026-11-13-island-fv-method-selection]] ← [[unicap-clock-power-architecture]] (the TRO sits in the VDD_CORE_LOW island, which matches where its lead appears: deep V_low dips at weak headers)
