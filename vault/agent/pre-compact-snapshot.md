@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-13 14:41
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-13 15:16
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-13 15:38
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-13 16:06
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src/dll_slides
@@ -45,9 +35,19 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-13 16:11
 
 **CWD:** /Users/parkjungjin/llm_agent_config
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-13 16:34
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
 
 ### Git State
 
