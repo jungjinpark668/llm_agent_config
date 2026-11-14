@@ -16,6 +16,9 @@
       "Read(//tmp/**)",
       "mcp__sequential-thinking__sequentialthinking"
     ],
+    "deny": [
+      "mcp__wolfram__WolframContext"
+    ],
     "ask": [
       "Edit(~/llm_agent_config/vault/projects/*/my-note/**)",
       "mcp__wolfram__WolframAlpha",
@@ -23,15 +26,12 @@
       "mcp__openalex__claim_author_profile",
       "mcp__openalex__submit_curations"
     ],
-    "deny": [
-      "mcp__wolfram__WolframContext"
-    ],
     "defaultMode": "auto",
     "additionalDirectories": [
       "~/llm_agent_config/vault"
     ]
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
