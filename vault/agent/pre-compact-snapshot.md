@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-15 01:03
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-15 01:38
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src/soc/syn_dll
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-15 01:56
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-15 02:20
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
@@ -45,7 +35,17 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-15 03:41
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-15 06:46
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
 
