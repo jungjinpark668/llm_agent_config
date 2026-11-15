@@ -31,7 +31,7 @@
       "~/llm_agent_config/vault"
     ]
   },
-  "model": "claude-fable-5-2[1m]",
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
