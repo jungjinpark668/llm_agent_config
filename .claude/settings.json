@@ -236,5 +236,34 @@
   "skipAutoPermissionPrompt": true,
   "trustedDirectories": [
     "~/llm_agent_config/vault"
-  ]
+  ],
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: unverified (gh reported \"not queryable here\" for jungjinpark668/llm_agent_config) — treat as possibly public: scope commits/pushes there as for a public repo",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: default branch unknown (origin/HEAD unset); Rulesets: none listed; Protected branches: none listed — treat as unprotected given no rulesets were reported either",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: The trusted repo (github.com/jungjinpark668/llm_agent_config) and its origin remote only — no additional orgs configured",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: files matching `**/.*credentials*` and the unusual-name-redacted gitignore pattern in this repo; any Obsidian vault note holding personal/journal content (`vault/personal/`); share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development — specifically maintaining this Claude Code configuration repo (CLAUDE.md, skills, agents, hooks) and its Obsidian vault memory system",
+      "**Trusted repo**: /Users/parkjungjin/llm_agent_config, remote origin https://github.com/jungjinpark668/llm_agent_config.git — visibility unverified, treat as possibly public for scoping commits/pushes",
+      "**Org-specific CLIs**: None configured — project-specific tools observed: `claude`, `zotero-mcp`, `uv`, `brew`",
+      "routine under vault/ prefix: writes to vault/inbox, vault/projects, vault/areas, vault/library, vault/personal, vault/agent are the agent's normal playground per CLAUDE.md; vault/projects/<project>/my-note/ is user-owned and read-only for agents unless explicitly asked"
+    ]
+  }
 }
