@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-16 11:17
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_s1l
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-16 11:59
 
 **CWD:** /Users/parkjungjin/llm_agent_config/vault/projects/hive_2026
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-16 13:04
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-16 14:01
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_s1l/src
@@ -45,9 +35,19 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-16 14:51
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_s1l/src
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-16 15:27
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_s1l/src/scratch_s1
 
 ### Git State
 
