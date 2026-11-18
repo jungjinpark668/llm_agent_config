@@ -224,3 +224,11 @@
 **Key decisions:** recommend the same-state figure for the paper (ratios 2.18 to 1.48 at codes 15-127, 1.11 at 255, 0.99-1.03 at 511-2047); leave jump walk 211109 out of it, as in the slowed-clock figure.
 **Open:** the user's choice of paper figure; vector formats (SVG/EPS/EMF) not asked yet.
 **Connections:** [[2026-11-13-island-fv-method-selection]] ← [[unicap-clock-power-architecture]] (the TRO sits in the VDD_CORE_LOW island, which matches where its lead appears: deep V_low dips at weak headers)
+
+## 2026-11-18
+**Worked on:** hive_2026 round_tc11: top APR in the user's order (rebalance -> clock freeze -> route_opt), the full wc/bc 10 ns test matrix (135 runs), a wc clock-period sweep and the full wc plan at the limit; afternoon report.
+**What worked:** reading each failing run's violation sites and times (sim_fails.sh, sim_viol_cats.sh) before any fix; two sim-only cfg fixes found that way (5 top synchronizer first stages; SPI samplers listed at a stale path that vcs ignores, Warning-[ICFNF]); proving runs unaffected by a cfg line when the log has 0 violations at that flop, so only hit runs were rerun. Result: wc good at every D (0-2.0 ns), bc good to 1.25 ns; testbench wc max 6.1 ns (full plan good), 6.0 ns fails in the CPU pipeline.
+**What failed:** first sweep looked non-monotonic (9.0/7.0/6.6/6.2 ns failed) until the SPI sampler path was fixed; a unit slip (violation times are ps, not 10 ps); an inline zsh `$X` command variable that does not word-split (no command ran).
+**Key decisions:** sim cfg changes only in the round copy, main src untouched; testbench max frequency reported as optimistic next to STA (tile 6.85 ns, CPU 20.88 ns in wc) because the test never drives the R1/R2 end flops; round_tc12 (cause-2 RTL gate + cause-1 testbench check) left to the user.
+**Open:** the user's round_tc12 decision; wc D 2.0 ns DLL-off 7 cells fails with no timing violation (not isolated); bc 1.75/2.0 ns need a longer DLL line (cause 3).
+**Connections:** [[2026-11-18-afternoon-report]] <- [[2026-11-18-morning-report]] (round_tc10 baseline and the four causes); [[dll-clock-balancing]] (the freeze held the DLL balance through route_opt)
