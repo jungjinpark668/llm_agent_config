@@ -31,7 +31,7 @@
       "~/llm_agent_config/vault"
     ]
   },
-  "model": "sonnet",
+  "model": "fable",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -234,9 +234,6 @@
   "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "trustedDirectories": [
-    "~/llm_agent_config/vault"
-  ],
   "autoMode": {
     "environment": [
       "### Org-wide",
@@ -265,5 +262,8 @@
       "**Org-specific CLIs**: None configured — project-specific tools observed: `claude`, `zotero-mcp`, `uv`, `brew`",
       "routine under vault/ prefix: writes to vault/inbox, vault/projects, vault/areas, vault/library, vault/personal, vault/agent are the agent's normal playground per CLAUDE.md; vault/projects/<project>/my-note/ is user-owned and read-only for agents unless explicitly asked"
     ]
-  }
+  },
+  "trustedDirectories": [
+    "~/llm_agent_config/vault"
+  ]
 }
