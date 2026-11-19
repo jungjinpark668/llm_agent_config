@@ -240,3 +240,11 @@
 **Key decisions:** report the 6 failing runs as known limits (DLL floor at small D with a 9-cell ext line; DLL-off range in bc, cause 4), each with evidence that they change with D and cell count, not with the gate.
 **Open:** main src copy, silicon start-up reset of all tiles, R1/R2 timing, d120_q1_bc silent-failure trace (user decisions).
 **Connections:** [[2026-11-19-morning-report]] <- [[2026-11-18-afternoon-report]] (cause 2 fixed, cause 4 unchanged)
+
+## 2026-11-19 (llm-agent-config, ECC repository analysis)
+**Worked on:** Analysis of the ECC repository (github.com/affaan-m/ECC, commit 3f14a10, version 2.2.3) against this setup. Report: [[2026-11-19-ecc-repo-analysis]]. Nothing in the setup was changed.
+**What worked:** Seven read-only reader agents, one area each, with the purpose written into every brief; the main session then re-opened about 40 of their cited lines (none wrong, one count off by one). After the report was written, a script compared 116 quoted passages with their cited line ranges and recounted every number. It caught five small errors in the draft: the scope of one count, one citation that pointed at the wrong file, and three wordings that said more than the source did.
+**What failed:** The first reply was stopped by a safety filter. The task was redone without the sequential-thinking MCP (doctrine rule 1) and no second stop happened. The session was compacted in the middle of the task more than once with no checkpoint written, because the model is never told its context size (report, 7.1 a). WebFetch returns at most 100,000 characters per call, so long doc pages needed reads with `offset`.
+**Key decisions:** None by the user yet. Recommendation in the report: do not install ECC; fix the four gaps in this setup first (report section 6), then adopt the small ideas in section 7.
+**Open:** The user chooses what to build first. The effort level a fresh Fable 5.2 session starts with is read from the docs only; confirm with `/effort`.
+**Connections:** [[2026-11-19-ecc-repo-analysis]] <- [[2026-11-09-agentic-flow-analysis]] (the documented idle compaction, at 200,000 tokens after about an hour idle, explains the 14 automatic compactions measured after 54 to 56 idle minutes)
