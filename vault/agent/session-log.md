@@ -232,3 +232,11 @@
 **Key decisions:** sim cfg changes only in the round copy, main src untouched; testbench max frequency reported as optimistic next to STA (tile 6.85 ns, CPU 20.88 ns in wc) because the test never drives the R1/R2 end flops; round_tc12 (cause-2 RTL gate + cause-1 testbench check) left to the user.
 **Open:** the user's round_tc12 decision; wc D 2.0 ns DLL-off 7 cells fails with no timing violation (not isolated); bc 1.75/2.0 ns need a longer DLL line (cause 3).
 **Connections:** [[2026-11-18-afternoon-report]] <- [[2026-11-18-morning-report]] (round_tc10 baseline and the four causes); [[dll-clock-balancing]] (the freeze held the DLL balance through route_opt)
+
+## 2026-11-18 (evening, hive_2026 round_tc12)
+**Worked on:** round_tc12 = round_tc11 + port-B CENB gate (hive_soc.sv) + open-loop growth check + reset of all 18 tiles in the testbench; DC, top APR, 88-run wc/bc matrix (2 tiles), 12 all-tile runs.
+**What worked:** every D GOOD in wc and bc (bc 1.5 ns newly passes with DLL on); 0 tile-memory violations in 88 runs; all-tile 12 of 12 pass. Gate timing read from the finished top: worst setup path to CENB starts at the update flop (+3.07 ns wc).
+**What failed:** first 2 test runs compiled a debug-kit hive_soc_tasks.sv: setup copied round_tc11 src with src/sim/s1_kit_dbg3, and link_src links every *.sv under src (last one wins). Fixed by moving the kit out of src and checking each run's tasks link (P_tasks). Also icc2 get_timing_paths has no -quiet option (CMD-010).
+**Key decisions:** report the 6 failing runs as known limits (DLL floor at small D with a 9-cell ext line; DLL-off range in bc, cause 4), each with evidence that they change with D and cell count, not with the gate.
+**Open:** main src copy, silicon start-up reset of all tiles, R1/R2 timing, d120_q1_bc silent-failure trace (user decisions).
+**Connections:** [[2026-11-19-morning-report]] <- [[2026-11-18-afternoon-report]] (cause 2 fixed, cause 4 unchanged)
