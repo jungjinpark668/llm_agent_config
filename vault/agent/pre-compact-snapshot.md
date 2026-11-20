@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-19 19:05
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_final/src/sapr/apr/tiles_array_26
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-19 20:01
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_final/src/sapr/apr/top_level_new
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-19 20:41
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-19 21:19
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_s1l
@@ -45,9 +35,19 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-19 22:07
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_final/src/sapr/apr
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-19 22:51
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_final
 
 ### Git State
 
