@@ -85,5 +85,25 @@ replacement limit. Result rows carry a `host` field for provenance.
   (per server-task rules), not sleep-polling; watchers wake on
   `+N [job` lines or `rc=[1-9]`.
 
+## HSPICE runs (measured 2026-11-22)
+
+Source: the hive_2026 SPICE clock tree runs on sathe-srv2, HSPICE X-2025.06-SP1, netlists of
+22 to 34 thousand MOSFETs and 290 to 476 thousand nodes ([[2026-11-22-spice-clock-tree-phase1-results]]).
+
+- `hspice -mp N` uses N + 1 cores. Each of the N workers takes one core at `-mt 1`, and the
+  master process keeps one more core busy for the whole run (ps showed 95 % lifetime CPU on the
+  master). Count N + 1 against a core limit.
+- More threads per process (`-mt`) gave almost no speed-up: 340 s at 4 threads against 451 to
+  503 s at 1 thread for the same deck. Run 1 thread per case and many cases in parallel.
+- With `-mp` and more `.ALTER` cases than workers, only the first case of each worker has a
+  measure file (`<out>/<deck>_dp/worker<N>/<deck>.mt<k>.csv`) while the job runs. All measure
+  files appear at the top of the `-o` folder when the job ends.
+- Stopping a `-mp` job: `tmux send-keys -t <session> C-c`. All its processes end within
+  30 s and the finished cases keep their measure files in the worker folders.
+- `.OPTION PUTMEAS = 0` keeps the measured nodes out of the waveform file (about 1 GB down to
+  4 MB per case with 17,729 measured nodes). The measure files do not change.
+- Each case also writes an `.ic<k>` file, about 30 MB for a netlist of 476 thousand nodes.
+- Each run checks out 2 hspice tokens.
+
 Related: [[fpga-bridge-compile]] (Vivado on the same hosts, tmux/pkill
 lessons), [[vault-concurrency]].

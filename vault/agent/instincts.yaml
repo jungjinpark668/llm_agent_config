@@ -73,3 +73,20 @@ instincts:
       User directive 2026-07-09 ("keep updating chip behavior context...
       keep adding the note what you found; no care about length I only care
       whether note is correct or not").
+
+  - id: zsh-list-variable-in-monitor-loop
+    project: hive-2026
+    confidence: 0.6
+    trigger: >
+      Writing a Monitor or Bash loop on the Mac (the local shell is zsh) that
+      iterates over a list held in a variable.
+    action: >
+      Write the list literally in the `for` line. zsh does not split an unquoted
+      variable into words, so `JOBS="a b c"; for s in $JOBS` runs once with the
+      whole string and a filter on `$s` never matches. When a monitor is armed on
+      a job that has already finished, an event must come within the first poll;
+      silence means the command is wrong, so check it at once.
+    evidence: >
+      2026-11-22, hive_2026 SPICE clock tree session: a monitor written with a
+      list variable delivered no event in 30 minutes although one of its jobs had
+      finished before it was armed. The same loop with a literal list worked.
