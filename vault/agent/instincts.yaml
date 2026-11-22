@@ -90,3 +90,24 @@ instincts:
       2026-11-22, hive_2026 SPICE clock tree session: a monitor written with a
       list variable delivered no event in 30 minutes although one of its jobs had
       finished before it was armed. The same loop with a literal list worked.
+
+  - id: server-disk-quota-before-long-run
+    project: hive-2026
+    confidence: 0.6
+    trigger: >
+      About to start a long run on sathe-srv2 that makes many sim or build
+      folders under /home/sathe (a test matrix, a build round, a night run).
+    action: >
+      First read the group quota: `quota -s -g vsathe-ece` (the limit is on the
+      group, not on the account; `quota -s` alone does not show it as a limit).
+      Measure what one job leaves on disk (`du -sh` of one finished run folder)
+      and multiply by the number of jobs. If the run does not fit under the hard
+      limit, tell the user before starting. Deleting needs the user's yes, so
+      ask for it before the run, not after the limit is hit.
+    evidence: >
+      2026-11-22 08:21 EST, hive_2026 night run: the group vsathe-ece reached
+      its hard limit on /home/sathe (5100 GB, quota 5000 GB). Every job of the
+      session failed with "Disk quota exceeded": the round 3 build chain and 12
+      sims. One post-layout sim leaves about 430 MB (simv.daidir 334 MB, csrc
+      42 MB, hive_soc.fsdb 33 MB); 2127 such build folders held 349 GB in
+      scratch_lvl. See [[2026-11-22-morning-report]], first section.
