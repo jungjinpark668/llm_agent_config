@@ -111,3 +111,23 @@ instincts:
       sims. One post-layout sim leaves about 430 MB (simv.daidir 334 MB, csrc
       42 MB, hive_soc.fsdb 33 MB); 2127 such build folders held 349 GB in
       scratch_lvl. See [[2026-11-22-morning-report]], first section.
+
+  - id: ndm-stored-paths-before-delete
+    project: hive-2026
+    confidence: 0.7
+    trigger: >
+      About to delete or move a folder on a server where ICC2 libraries (NDM,
+      lib.ndm / tech.ndm) were ever built or copied from.
+    action: >
+      Besides links and scripts, read the paths stored inside every NDM library
+      that stays: `zstd -dc <lib.ndm> | strings | grep -o '/home/[^ ]*'` (and
+      tech.ndm). NDM files are Zstandard-compressed, so a link scan or a plain
+      grep never sees these paths. Any stored path into the folder to delete
+      blocks the delete (or keep the one link it goes through).
+    evidence: >
+      2026-11-22 22:32 EST, hive_2026: deleting scratch_lvl/ta1116b removed the
+      link ta1116b/usr, through which the TA block 0 library in submissions
+      binds its standard-cell libraries. ICC2 then failed with NDM-101 "Binding
+      to technology library is missing" for block 0, in every layout using it.
+      A link scan of 91,452 links had found nothing. Repaired by recreating the
+      link. See [[2026-11-22-morning-report]], first section.
