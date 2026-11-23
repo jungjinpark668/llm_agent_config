@@ -248,3 +248,11 @@
 **Key decisions:** None by the user yet. Recommendation in the report: do not install ECC; fix the four gaps in this setup first (report section 6), then adopt the small ideas in section 7.
 **Open:** The user chooses what to build first. The effort level a fresh Fable 5.2 session starts with is read from the docs only; confirm with `/effort`.
 **Connections:** [[2026-11-19-ecc-repo-analysis]] <- [[2026-11-09-agentic-flow-analysis]] (the documented idle compaction, at 200,000 tokens after about an hour idle, explains the 14 automatic compactions measured after 54 to 56 idle minutes)
+
+## 2026-11-23 (hive_2026, 18-block layout round 3 final)
+**Worked on:** layout with one submitted block per tile (tile 0 = TA block), round 3; all tests in tc, wc, bc (407 sims, all ended cleanly); plain morning report [[2026-11-23-morning-report]] with log paths and diffs against main src; clean-code proof run on round 3.
+**What worked:** our part (tile 0) PASS in tc, wc, bc under the user's per-delay rule (a tile clock delay passes when any setting passes); balance PASS at all 18 tiles in all corners (worst 0.0272 of 0.030 ns); clean code for main gives round 3's 85 result lines line for line. Checking every report claim against its source before sending found 6 wrong statements in my own first draft (setup number, a "reset is on" story without evidence, a guessed time, the main-src = round_final2 shortcut).
+**What failed:** applying the plan's stricter quick-routine rule (no fail where main passes) instead of the user's per-delay rule, and calling student tiles 16, 17 "TA design"; both corrected by the user.
+**Key decisions:** student tiles 1-17 only recorded (user); DLL-off tolerance loss (round 3 lacks main's 0.36 ns hold-fix cells on mem_ib -> tile 0) recorded as a fact, not a fail; proof run started beside the queue (one slot).
+**Open:** user's yes before the candidate goes into main src (`scratch_jj/review_r3/all_changes_for_main.patch`); report as web page (asked); memory-off testbench question (11-22 report).
+**Connections:** [[2026-11-23-morning-report]] <- [[2026-11-22-morning-report]] (night record); [[dll-clock-balancing]] (balance with different blocks per tile)
