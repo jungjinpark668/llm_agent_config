@@ -256,3 +256,11 @@
 **Key decisions:** student tiles 1-17 only recorded (user); DLL-off tolerance loss (round 3 lacks main's 0.36 ns hold-fix cells on mem_ib -> tile 0) recorded as a fact, not a fail; proof run started beside the queue (one slot).
 **Open:** user's yes before the candidate goes into main src (`scratch_jj/review_r3/all_changes_for_main.patch`); report as web page (asked); memory-off testbench question (11-22 report).
 **Connections:** [[2026-11-23-morning-report]] <- [[2026-11-22-morning-report]] (night record); [[dll-clock-balancing]] (balance with different blocks per tile)
+
+## 2026-11-24 (hive_2026, SPICE check of the round 4 balance loop)
+**Worked on:** SPICE (tc first, then low voltage, then wc / bc) of every pass the SAPR session built in round 4: pass 2 (array chain edits plus top), pass 3 (top only), pass 4 (one buffer). Tables and segment splits sent to the SAPR session after each step; all results in [[2026-11-23-spice-feedback-round3-student-tiles]].
+**What worked:** pass 4 puts all 18 tiles inside 0.030 ns at tc 1.0 V (-0.0169 .. +0.0222), bc 18 of 18, wc 13 of 18 (spread 0.0616 ns, wider than the window). The tile 00 sweep predicted each full 18-tile 1.0 V table about 25 min early within 0.0001 ns, because a top-only pass shifts every tile by the same amount. Cutting a replaced pass to its quick set and skipping its wc / bc saved about 3 h of 14-16 cores.
+**What failed:** pass 3 overshot (SPICE +0.0370 against the tool's +0.0193, 5 tiles out): the cells CTS and the rebalance added after the DLL output are 1.158 times slower in SPICE than in the tool; the 1.07-1.08 ratio of pass 2 did not carry over. Twice I passed on a segment ratio before checking where the changed cell sits (corrected the same hour).
+**Key decisions:** loop rule agreed with the SAPR session on the user's words (tc inside -> final testbench); low-voltage lock computed from SPICE bypass sweeps plus the SPICE line table, no closed loop on pass 4.
+**Open:** user's yes for the SAPR hold ECO (r4_i5, data path, no clock net); deletion of my server leftovers; tiles 10 and 12 keep |L| > 0.03 ns at low voltage.
+**Connections:** [[2026-11-23-spice-feedback-round3-student-tiles]] <- [[dll-clock-balancing]] (SPICE / tool ratio of the post-DLL branch moves the 1.0 V balance by about 8-16 % of any change there)
