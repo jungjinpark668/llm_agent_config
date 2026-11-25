@@ -264,3 +264,11 @@
 **Key decisions:** loop rule agreed with the SAPR session on the user's words (tc inside -> final testbench); low-voltage lock computed from SPICE bypass sweeps plus the SPICE line table, no closed loop on pass 4.
 **Open:** user's yes for the SAPR hold ECO (r4_i5, data path, no clock net); deletion of my server leftovers; tiles 10 and 12 keep |L| > 0.03 ns at low voltage.
 **Connections:** [[2026-11-23-spice-feedback-round3-student-tiles]] <- [[dll-clock-balancing]] (SPICE / tool ratio of the post-DLL branch moves the 1.0 V balance by about 8-16 % of any change there)
+
+## 2026-11-24
+**Worked on:** hive_2026 side scratch: De Caro 2013 glitch-free NAND delay line in syn_dll (RTL, same SAPR flow, gate sweeps tc/wc/bc, closed loop d150 and tile 10), compared with the original line under the same block-SDF method.
+**What worked:** new line has 0 steps with a pulse at dll0 out and memory pins in all corners (original tc: 3); tile 10 D = 1.35 loses all 224 memory-clock width violations; a read-only code monitor (scan_dll_register_o) explained the d150 pass/fail by the lock step (33/34 vs 34/35).
+**What failed:** predictions of a shorter range and a 40 ps step (APR put 2 BUFFD0 in front of every dummy input; return NAND 30 vs 20 ps); down-step rule Delta_t < 3t fails (S latch heavier load + S driver 28-44 um from its DE), leaving one 20-40 ps line-out runt per corner; zsh does not word-split `set -- $x` (use explicit args).
+**Key decisions:** block SDF on both sides (the chip SDF has no new cells); gate sim only, SPICE after the user's PEX; v2 fixes (net dont_touch, driver placement) left to the user.
+**Open:** user decision on v2; SVG/EPS for the plots; user PEX + spice_step.py node rename.
+**Connections:** [[2026-11-24-glitch-free-line-scratch]] <- [[de-caro-2013-glitch-free-nand-dcdl]] (paper's equal-load and equal-latch assumptions break in APR)
