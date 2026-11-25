@@ -281,3 +281,11 @@
 **Key decisions:** retry only on a DLL-on fail; the retry decides; both results printed; tile memories (and CPU memory) put back before the retry; restore after the new lock in the memory test (its code walk can pulse). Main src untouched (needs the user's word).
 **Open:** user's word on r4_i5 as final, the retry into main src, server deletes (prj_rt 216 MB added to the list).
 **Connections:** [[2026-11-24-morning-report]] (section "DLL retry in the testbench") <- [[2026-11-23-round4-loop-report]]
+
+## 2026-11-25
+**Worked on:** hive_2026: r4_i6 (pass 4 + hold margin in route_opt + fine-tune ECO) built and verified overnight: timing at 10 and 6 ns, 173 sims, SPICE tc balance and low voltage. New testbench switch layout and DLL retry proven on r4_i5. Report: [[2026-11-25-morning-report]].
+**What worked:** proving each difference with the same testbench on the other layout (prj_tb) before calling it explained; per-tile SPICE compare as each tile ended; retry_cls.py placing messages before or after the first retry.
+**What failed:** two mechanisms written before their proof run were wrong (retry CENB reset instant; tile-6 message in the DLL-off part); both moved to History. The turn ended at 07:43 with the report summary stale until the user came back at 13:xx.
+**Key decisions:** d000_q1_wc start-up CENB hold message (wc only) listed for the user, not acted on. SPICE wc and bc not run, since the tc balance moved no tile by more than 0.001 ns.
+**Open:** layout for main (r4_i6 or r4_i5); main src changes; server deletes.
+**Connections:** [[2026-11-25-morning-report]] <- [[2026-11-24-morning-report]] pass 4 is the reference of every compare.
