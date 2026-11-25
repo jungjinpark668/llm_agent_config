@@ -273,3 +273,11 @@
 **Open:** user decision on v2; SVG/EPS for the plots; user PEX + spice_step.py node rename.
 **Connections:** [[2026-11-24-glitch-free-line-scratch]] <- [[de-caro-2013-glitch-free-nand-dcdl]] (paper's equal-load and equal-latch assumptions break in APR)
 **Closed (same day):** user stopped the glitch-free scratch; final tapeout keeps the original DLL (pass 4). Reason recorded in [[2026-11-24-glitch-free-line-scratch]] "Decision": SPICE of the original line shows no pulse at line out, DLL out or memory clocks; the removed pulses are gate-sim artifacts. No v2, no PEX of the new line.
+
+## 2026-11-24 (evening, hive_2026: r4_i5 sims + DLL retry in the testbench)
+**Worked on:** r4_i5 (pass 4 + item 1 enable-hold ECO) full sim list against pass 4; the DLL retry in the post-APR testbench (user: a DLL-on fail runs once more with the code held and the closed loop off; if that passes, the test passes).
+**What worked:** r4_i5: 149 runs, 0 regressions, 6 fixed, all 60 fails also in pass 4. Retry: 6 test runs plus 3 re-check runs, every result as predicted (3 pulse cases pass, real fails stay, passing run unchanged). Fresh-reviewer review (review-code skill) found 2 real gaps that the runs could not show (no-valid-code memory retry could pass in closed loop; CPU retry reloaded the firmware file instead of the first try's memory).
+**What failed:** first retry design read the DLL code after the failed try: the gate sim leaves the DLL controller at X after the pulse fail, so no code could be read (sim_rt/d150_q2_tc). Fix: read it before the first try. Also: a zsh loop with an unquoted "$S" ssh command never ran (zsh does not split words); use bash -c for such loops.
+**Key decisions:** retry only on a DLL-on fail; the retry decides; both results printed; tile memories (and CPU memory) put back before the retry; restore after the new lock in the memory test (its code walk can pulse). Main src untouched (needs the user's word).
+**Open:** user's word on r4_i5 as final, the retry into main src, server deletes (prj_rt 216 MB added to the list).
+**Connections:** [[2026-11-24-morning-report]] (section "DLL retry in the testbench") <- [[2026-11-23-round4-loop-report]]
