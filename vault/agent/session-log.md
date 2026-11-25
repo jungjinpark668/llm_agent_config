@@ -272,3 +272,4 @@
 **Key decisions:** block SDF on both sides (the chip SDF has no new cells); gate sim only, SPICE after the user's PEX; v2 fixes (net dont_touch, driver placement) left to the user.
 **Open:** user decision on v2; SVG/EPS for the plots; user PEX + spice_step.py node rename.
 **Connections:** [[2026-11-24-glitch-free-line-scratch]] <- [[de-caro-2013-glitch-free-nand-dcdl]] (paper's equal-load and equal-latch assumptions break in APR)
+**Closed (same day):** user stopped the glitch-free scratch; final tapeout keeps the original DLL (pass 4). Reason recorded in [[2026-11-24-glitch-free-line-scratch]] "Decision": SPICE of the original line shows no pulse at line out, DLL out or memory clocks; the removed pulses are gate-sim artifacts. No v2, no PEX of the new line.
