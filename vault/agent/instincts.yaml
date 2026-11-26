@@ -114,10 +114,11 @@ instincts:
 
   - id: ndm-stored-paths-before-delete
     project: hive-2026
-    confidence: 0.7
+    confidence: 0.9
     trigger: >
       About to delete or move a folder on a server where ICC2 libraries (NDM,
-      lib.ndm / tech.ndm) were ever built or copied from.
+      lib.ndm / tech.ndm) were ever built or copied from, or about to write a
+      delete list for the user to approve (run the check before the list).
     action: >
       Besides links and scripts, read the paths stored inside every NDM library
       that stays: `zstd -dc <lib.ndm> | strings | grep -o '/home/[^ ]*'` (and
@@ -131,3 +132,10 @@ instincts:
       to technology library is missing" for block 0, in every layout using it.
       A link scan of 91,452 links had found nothing. Repaired by recreating the
       link. See [[2026-11-22-morning-report]], first section.
+      2026-11-26, hive_2026 again: the code feedback delete list (Rule 2) was
+      checked with grep and links only. It held scratch_lvl/ta1116b (same link)
+      and all of scratch_lvl/blk18/r4, whose prj/lm and
+      prj/apr/tiles_array_26/ndm/65GP links carry the standard-cell paths of
+      the round 4 array library (copied into r4_i4, r4_i5, r4_i6, spice_r4i6,
+      gold). Found by the zstd check after the delete; links made again 17:14
+      and 17:17 EST; 168 library files then resolved. No run had started.
