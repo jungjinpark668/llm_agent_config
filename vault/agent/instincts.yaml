@@ -124,7 +124,9 @@ instincts:
       that stays: `zstd -dc <lib.ndm> | strings | grep -o '/home/[^ ]*'` (and
       tech.ndm). NDM files are Zstandard-compressed, so a link scan or a plain
       grep never sees these paths. Any stored path into the folder to delete
-      blocks the delete (or keep the one link it goes through).
+      blocks the delete (or keep the one link it goes through). Follow the
+      chain to the end: scan what the kept folders reach, then what those
+      reach, until nothing new comes up; then the other users' folders.
     evidence: >
       2026-11-22 22:32 EST, hive_2026: deleting scratch_lvl/ta1116b removed the
       link ta1116b/usr, through which the TA block 0 library in submissions
@@ -139,3 +141,7 @@ instincts:
       the round 4 array library (copied into r4_i4, r4_i5, r4_i6, spice_r4i6,
       gold). Found by the zstd check after the delete; links made again 17:14
       and 17:17 EST; 168 library files then resolved. No run had started.
+      2026-11-26 17:55 EST: before the next delete, the chain scan found
+      blk18/fw18_build and blk18/stage needed through r4_i6 (link to a link);
+      a one-step check would have missed them. Delete went clean: broken-link
+      counts of the kept folders equal before and after.
