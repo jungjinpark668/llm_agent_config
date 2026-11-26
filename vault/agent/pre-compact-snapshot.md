@@ -3,7 +3,7 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-25 23:45
+## Pre-Compact Snapshot — 2026-11-25 23:55
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
 
@@ -25,16 +25,6 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
-
-## Pre-Compact Snapshot — 2026-11-25 23:55
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
 
 ## Pre-Compact Snapshot — 2026-11-25 23:58
 
@@ -45,7 +35,17 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-26 00:09
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-26 00:16
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
 
