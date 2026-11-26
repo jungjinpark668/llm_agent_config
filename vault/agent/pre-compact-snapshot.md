@@ -3,18 +3,6 @@
 
 
 
-## Pre-Compact Snapshot — 2026-11-25 02:28
-
-**CWD:** /Users/parkjungjin/PSy_lab/hive_2026/scratch_jj/ws_tbcfg/src/soc
-
-### Git State
-
-
-### Vault Notes Modified Today
----SNAPSHOT---
-
-
-
 ## Pre-Compact Snapshot — 2026-11-25 04:40
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026/src
@@ -24,6 +12,7 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 
 
 ## Pre-Compact Snapshot — 2026-11-25 11:11
@@ -36,6 +25,7 @@
 ### Vault Notes Modified Today
 ---SNAPSHOT---
 
+
 ## Pre-Compact Snapshot — 2026-11-25 11:47
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
@@ -45,7 +35,17 @@
 
 ### Vault Notes Modified Today
 ---SNAPSHOT---
+
 ## Pre-Compact Snapshot — 2026-11-25 14:53
+
+**CWD:** /Users/parkjungjin/PSy_lab/hive_2026
+
+### Git State
+
+
+### Vault Notes Modified Today
+---SNAPSHOT---
+## Pre-Compact Snapshot — 2026-11-25 23:16
 
 **CWD:** /Users/parkjungjin/PSy_lab/hive_2026
 
