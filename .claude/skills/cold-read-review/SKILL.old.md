@@ -286,7 +286,7 @@ Standing lists at the top of the log:
 
 "Add this to the final pass" or "remind me later" means add the item to the right list.
 
-## Output to Visvesh
+## Output to User
 Keep it concise:
 1. **Genre and persona used** (one line), then the **verdict**, and what was fixed since last time.
 2. **Gaps**: Critical and Major items, each with *what*, *why*, and a **proposed phrasing**. Minor items in brief. For decks, cite slide numbers and titles.
